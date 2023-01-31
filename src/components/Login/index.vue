@@ -33,7 +33,7 @@
             
                   <van-checkbox 
                       class="vancheck"
-                      style="height:40px;margin: 4px 15px;font-size: 15px;"
+                      style="height:40px;margin: 16px ;font-size: 15px;"
                       v-model="loginForm.rememberMe"
                       name = 'rememberMe' shape="square">
                       记住密码
