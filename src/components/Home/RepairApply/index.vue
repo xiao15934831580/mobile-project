@@ -8,42 +8,41 @@
     />
     <div class="main">
       <van-form @failed="onFailed">
-        <div class="tableHeader">主表区</div>
-        <van-cell-group inset>
+        <!-- <div class="tableHeader">主表区</div> -->
+        <van-cell-group class="topBox" inset>
           <van-field
-            v-model="formData.addNumber"
-            disabled
-            name="pattern"
+            :model-value="formData.addNumber"
+            readonly 
             label="报修单号"
             placeholder="报修单号"
           />
-          <van-field name="switch" label="紧急报修">
-            <template #input>
-              <van-switch v-model="formData.checked" />
-            </template>
-          </van-field>
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.vehicleNumber"
             label="车辆编号"
             placeholder="车辆编号"
           />
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.licensePlateNumber"
             label="车牌号"
             placeholder="车牌号"
           />
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.modelNumber"
             label="品牌型号"
             placeholder="品牌型号"
           />
+          <van-field name="radio" label="紧急程度">
+            <template #input>
+              <van-radio-group v-model="formData.urgencyChecked" direction="horizontal">
+                <van-radio name="1">普通报修</van-radio>
+                <van-radio name="2">紧急报修</van-radio>
+              </van-radio-group>
+            </template>
+          </van-field>
         </van-cell-group>
 
-        <div class="tableHeader">故障明细区</div>
-        <div class="cardBox" v-for="(item,index) in formData.faultDetails" :key = 'item.index'>
+        <div class="tableHeader">故障明细</div>
+        <div class="cardBox" v-for="(item,index) in formData.faultDetails" :key = 'index'>
           <p class="tableIndex">序号：{{index+1}}</p>
           <van-icon class="closeFault" @click="closeFault(index)" name="cross" />
           <van-cell-group inset>
@@ -54,7 +53,7 @@
               name="picker"
               label="故障分类"
               placeholder="选择故障分类"
-              @click="showfaultPartButton(index)"
+              @click="showfaultTypeConfirm(index)"
             />
             <van-popup v-model:show="showPicker" position="bottom">
               <van-picker
@@ -70,7 +69,7 @@
               name="picker"
               label="故障部件"
               placeholder="选择故障部件"
-              @click="showfaultPart(index)"
+              @click="showfaultPartButton(index)"
             />
             <van-popup v-model:show="showfaultPart" position="bottom">
               <van-picker
@@ -80,23 +79,23 @@
               />
             </van-popup>
             <van-field
-              v-model="formData.faultDetails.faultPhenomenonResult"
+              v-model="item.faultPhenomenonResult"
               is-link
               readonly
               name="picker"
               label="故障现象"
               placeholder="选择故障现象"
-              @click="showfaultPhenomenon = true"
+              @click="showfaultPhenomenonButton(index)"
             />
             <van-popup v-model:show="showfaultPhenomenon" position="bottom">
               <van-picker
-                :columns="formData.faultDetails.faultPhenomenon"
+                :columns="item.faultPhenomenon"
                 @confirm="faultPhenomenonConfirm"
                 @cancel="showffaultPhenomenon = false"
               />
             </van-popup>
             <van-field
-              v-model="formData.faultDetails.message"
+              v-model="item.message"
               rows="1"
               autosize
               label="其他说明"
@@ -107,6 +106,15 @@
 
         </div>
         <van-icon @click.prevent="addFault" class="addFault" name="add-o" />
+        <div v-if="showApprove" class="tableHeader">审批进度</div>
+        <div v-if="showApprove">
+          <van-steps direction="vertical"  :active="1" active-icon="success" active-color="#07c160" >
+            <van-step v-for="(approve,index) in formData.approveArr" :key = 'index'>
+              <h3>{{approve.name}}</h3>
+              <p>{{approve.time}}</p>
+            </van-step>
+          </van-steps>
+        </div>
         <div style="margin: 16px">
           <!-- <van-action-bar> -->
             <van-action-bar-button color="#be99ff" type="warning" text="保存" />
@@ -120,12 +128,15 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import {useRouter} from 'vue-router';
 const router = useRouter()
 const formData = ref({
-  addNumber: "111",
-  checked: false,
+  addNumber: "111", //报修单号
+  vehicleNumber:'', //车辆编号
+  licensePlateNumber:'', //车牌号
+  modelNumber:'', //品牌型号
+  urgencyChecked: '2',
   faultDetails:[
     {
       faultType: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
@@ -136,15 +147,49 @@ const formData = ref({
       faultPhenomenonResult: "",
       message: "1",
     }
+  ],
+  approveArr:[
+    {
+      name:'已审批',
+      time:'2023-06-03'
+    },
+    {
+      name:'待审批',
+      time:'2023-06-03'
+    },
+        {
+      name:'待审批',
+      time:'2023-06-03'
+    },
+        {
+      name:'待审批',
+      time:'2023-06-03'
+    }
   ]
 
 });
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
+const showApprove = ref(true);// 新建状态
+watch(
+  ()=>router.currentRoute.value.query,
+  (newValue)=>{
+    console.log('newValue',newValue)
+    if(newValue.numId){ // 数据详情
+        showApprove.value = true;
+        let repairId = newValue.numId;
+        formData.value.addNumber = repairId
+    }else{
+      showApprove.value = false;
+    }
+
+  },
+  {immediate:true}
+)
 const showPicker = ref(false);
 const faultTypeIndex = ref('')
-const showfaultType = (index) => {
+const showfaultTypeConfirm = (index) => {
     showPicker.value = true;
     faultTypeIndex.value = index;
 }
@@ -163,10 +208,15 @@ const faultPartConfirm = (value) => {
   showfaultPart.value = false;
 };
 const showfaultPhenomenon = ref(false);
+const faultPhenomenonIndex = ref('')
 const faultPhenomenonConfirm = (value) => {
-  formData.value.faultDetails.faultPhenomenonResult = value;
+  formData.value.faultDetails[faultPhenomenonIndex.value].faultPhenomenonResult = value;
   showfaultPhenomenon.value = false;
 };
+const showfaultPhenomenonButton = (index)=>{
+    showfaultPhenomenon.value = true;
+    faultPhenomenonIndex.value = index;
+}
 const closeFault = (index)=>{
   formData.value.faultDetails.splice(index,1)
 }
@@ -187,8 +237,14 @@ const addFault = () =>{
 <style lang="less" scoped>
 .tableHeader {
   color: #666;
-  font-size: 32px;
-  margin: 16px;
+  font-size: .4rem;
+  margin: .16rem;
+  background-color: #ffffff;
+  margin: .16rem 0;
+  padding: .16rem !important;
+}
+.topBox{
+  margin-top: .16rem;
 }
 .container{
     display: flex;
@@ -200,43 +256,39 @@ const addFault = () =>{
         overflow-y: scroll;
     }
 }
-:deep(.van-icon) {
-  color: #666;
+:deep(.van-step__title p){
+  font-size: .35rem;
 }
-:deep(.van-switch--on) {
-  height: 48px;
-  width: 108px;
-}
-:deep(.van-switch--on .van-switch__node) {
-  height: 44px;
-  width: 44px;
+:deep(.van-step__title h3){
+  font-size: .35rem;
 }
 :deep(.van-cell-group--inset) {
   margin: 0;
+  margin-top: .16rem;
 }
 .cardBox {
-  padding-top: 90px;
+  padding-top: 1.2rem;
   background-color: #ffffff;
-  margin: 32px;
+  margin: .16rem;
   border-radius: 0.21333rem;
   position: relative;
   .closeFault{
-    font-size: 28px;
+    font-size: .4rem;
     position: absolute;
-    top: 32px;
-    right: 32px;
+    top: .4rem;
+    right: .4rem;
   }
   .tableIndex{
-    font-size: 28px;
+    font-size: .4rem;
     position: absolute;
-    top: 32px;
-    left: 32px;
+    top: .4rem;
+    left:.4rem;
     font-weight: 600;
   }
 }
 .addFault{
-  font-size: 32px;
-  margin: 0 32px;
+  font-size: .4rem;
+  margin: 0 .4rem;
   display: block;
 }
 </style>

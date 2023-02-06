@@ -11,27 +11,23 @@
         <div class="tableHeader">主表区</div>
         <van-cell-group inset>
           <van-field
-            v-model="formData.addNumber"
-            disabled
-            name="pattern"
+            :model-value="formData.addNumber"
+            readonly 
             label="报修单号"
             placeholder="报修单号"
           />
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.vehicleNumber"
             label="车辆编号"
             placeholder="车辆编号"
           />
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.licensePlateNumber"
             label="车牌号"
             placeholder="车牌号"
           />
           <van-field
-            v-model="addNumber"
-            name="pattern"
+            v-model="formData.modelNumber"
             label="品牌型号"
             placeholder="品牌型号"
           />
@@ -43,7 +39,7 @@
           <van-icon class="closemaintain" @click="closemaintain(index)" name="cross" />
           <van-cell-group inset>
             <van-field
-              v-model="item.maintainTypeResult"
+              v-model="item.maintainItemLbl"
               is-link
               readonly
               name="picker"
@@ -59,44 +55,56 @@
               />
             </van-popup>
             <van-field
-              v-model="formData.maintainDetails.maintainPartResult"
+              v-model="item.maintainCycle"
+              label="保养周期（h）"
+              placeholder="保养周期（h）"
+            />
+            <van-field
+              v-model="item.replacement"
+              label="油品或滤芯型号"
+              placeholder="油品或滤芯型号"
+            />
+            <van-field
+              v-model="item.lastExecHour"
+              label="上次执行台时/h"
+              placeholder="上次执行台时/h"
+            />
+            <van-field
+              v-model="item.planExecHour"
+              label="本次计划执行台时/h"
+              placeholder="本次计划执行台时/h"
+            />
+            <!-- <van-field
+              v-model="item.realExecDate"
+              label="实际执行日期"
+              placeholder="实际执行日期"
+            /> -->
+            <van-field
+              v-model="item.realExecDate"
               is-link
               readonly
-              name="picker"
-              label="故障部件"
-              placeholder="选择故障部件"
-              @click="showmaintainPart = true"
+              name="datePicker"
+              label="实际执行日期"
+              placeholder="实际执行日期"
+              @click="showrealExecDate(index)"
             />
-            <van-popup v-model:show="showmaintainPart" position="bottom">
-              <van-picker
-                :columns="formData.maintainDetails.maintainPart"
-                @confirm="maintainPartConfirm"
-                @cancel="showmaintainPart = false"
-              />
+            <van-popup v-model:show="isShowrealExecDate" position="bottom">
+              <van-datetime-picker  type="date" @confirm="realExecDateConfirm" @cancel="isShowrealExecDate = false" />
             </van-popup>
             <van-field
-              v-model="formData.maintainDetails.maintainPhenomenonResult"
-              is-link
-              readonly
-              name="picker"
-              label="故障现象"
-              placeholder="选择故障现象"
-              @click="showmaintainPhenomenon = true"
+              v-model="item.realExecHour"
+              label="实际执行台时/h"
+              placeholder="实际执行台时/h"
             />
-            <van-popup v-model:show="showmaintainPhenomenon" position="bottom">
-              <van-picker
-                :columns="formData.maintainDetails.maintainPhenomenon"
-                @confirm="maintainPhenomenonConfirm"
-                @cancel="showfmaintainPhenomenon = false"
-              />
-            </van-popup>
             <van-field
-              v-model="formData.maintainDetails.message"
-              rows="1"
-              autosize
-              label="其他说明"
-              type="textarea"
-              placeholder="请输入其他说明"
+              v-model="item.executor"
+              label="责任人"
+              placeholder="责任人"
+            />
+            <van-field
+              v-model="item.remark"
+              label="备注"
+              placeholder="备注"
             />
           </van-cell-group>
 
@@ -120,15 +128,26 @@ import {useRouter} from 'vue-router';
 const router = useRouter()
 const formData = ref({
   addNumber: "111",
+  vehicleNumber:'',
+  licensePlateNumber:'',
+  modelNumber:'',
   maintainDetails:[
     {
       maintainType: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-      maintainTypeResult: "",
+      maintainItemLbl: "",  //保养项目
       maintainPart: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
       maintainPartResult: "",
       maintainPhenomenon: ["损坏", "异响", "故障"],
       maintainPhenomenonResult: "",
       message: "1",
+      maintainCycle:'', //保养周期
+      replacement:'',//油品或滤芯型号
+      lastExecHour:'', //上次执行台时/h
+      planExecHour:'', // 本次计划执行台时/h
+      realExecDate:'', // 实际执行日期
+      realExecHour:'',//实际执行台时/h
+      executor:'',//责任人
+      remark:'',//备注
     }
   ]
 
@@ -143,27 +162,33 @@ const showPickerButton = (index) => {
 }
 const showPicker = ref(false);
 const maintainTypeConfirm = (value) => {
-  formData.value.maintainDetails[maintainIndex.value].maintainTypeResult = value;
+  formData.value.maintainDetails[maintainIndex.value].maintainItemLbl = value;
   showPicker.value = false;
 };
 
-const showmaintainPart = ref(false);
-const maintainPartConfirm = (value) => {
-  formData.value.maintainDetails[maintainIndex].maintainPartResult = value;
-  showmaintainPart.value = false;
+const isShowrealExecDate = ref(false);
+const pickerIndex = ref('')
+const showrealExecDate = (index) => {
+    isShowrealExecDate.value = true;
+    pickerIndex.value = index;
+}
+const getymd = (dateStr) => {
+    let d = new Date(dateStr);
+    let resDate = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+    return resDate;
+}
+const realExecDateConfirm = (value) => {
+  formData.value.maintainDetails[pickerIndex.value].realExecDate = getymd(value);
+  isShowrealExecDate.value = false;
 };
-const showmaintainPhenomenon = ref(false);
-const maintainPhenomenonConfirm = (value) => {
-  formData.value.maintainDetails.maintainPhenomenonResult = value;
-  showmaintainPhenomenon.value = false;
-};
+
 const closemaintain = (index)=>{
   formData.value.maintainDetails.splice(index,1)
 }
 const addmaintain = () =>{
   let obj = {
       maintainType: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-      maintainTypeResult: "",
+      maintainItemLbl: "",
       maintainPart: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
       maintainPartResult: "",
       maintainPhenomenon: ["损坏", "异响", "故障"],

@@ -2,18 +2,17 @@
   <div>
     <van-space size="16px"> 
       <van-button type="primary" to="/repairapply">报修申请</van-button>
-      <van-button type="primary">保修单查询</van-button>
+      <van-button type="primary" to = '/repairsearch'>报修单查询</van-button>
       <van-button type="primary" to='/maintainapply'>保养申请</van-button>
     </van-space>
-     <van-space size="16px"> 
-      <van-button type="primary">保养单查询</van-button>
-      <van-button type="primary">外来人登记</van-button>
-      <van-button type="primary">违规登记</van-button>
-    </van-space>
-    
     <van-space size="16px"> 
-      <van-button type="primary">违规历史记录</van-button>
-      <van-button type="primary">外来人员登记记录</van-button>
+      <van-button type="primary" to='/maintainsearch'>保养单查询</van-button>
+      <van-button type="primary" to='/outperson'>外来人登记</van-button>
+      <van-button type="primary" to='/violation'>违规登记</van-button>
+    </van-space>
+    <van-space size="16px"> 
+      <van-button type="primary" to='/violationsearch'>违规历史记录</van-button>
+      <van-button type="primary" to='/outpersonsearch'>外来人员登记记录</van-button>
       <van-button type="primary">待办提醒</van-button>
     </van-space>
   </div>
@@ -28,7 +27,7 @@ const columns = ref([
       { text: '绍兴', value: 'Shaoxing' },
       { text: '湖州', value: 'Huzhou' },
     ]);
-     const fieldValue = ref('');
+    const fieldValue = ref('');
     const showPicker = ref(false);
 
     const onConfirm = ({ selectedOptions }) => {

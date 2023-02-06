@@ -33,6 +33,30 @@ const routes = [
   {
     path: '/maintainapply',
     component:() => import('../components/Home/MaintainApply/index.vue'),
+  },
+  {
+    path: '/violation',
+    component:() => import('../components/Home/Violation/index.vue'),
+  },
+  {
+    path: '/outperson',
+    component:() => import('../components/Home/Outperson/index.vue'),
+  },
+  {
+    path: '/repairsearch',
+    component:() => import('../components/Home/RepairSearch/index.vue'),
+  },
+  {
+    path: '/maintainsearch',
+    component:() => import('../components/Home/MaintainSearch/index.vue'),
+  },
+  {
+    path: '/violationsearch',
+    component:() => import('../components/Home/ViolationSearch/index.vue'),
+  },
+  {
+    path: '/outpersonsearch',
+    component:() => import('../components/Home/OutpersonSearch/index.vue'),
   }
 ];
 const router = createRouter({
