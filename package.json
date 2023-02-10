@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "amfe-flexible": "^2.2.1",
+    "ant-design-vue": "^3.2.15",
     "core-js": "^3.8.3",
     "vant": "^3.6.11",
     "vue": "^3.2.13",

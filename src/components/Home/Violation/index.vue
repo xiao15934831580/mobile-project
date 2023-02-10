@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <van-nav-bar
-      title="违规登记"
+      :title="pageTitle"
       left-text=""
       left-arrow
       @click-left="onClickLeft"
     />
     <div class="main">
       <van-form @failed="onFailed">
-        <div class="tableHeader">主表区</div>
+        <!-- <div class="tableHeader">主表区</div> -->
         <van-cell-group inset>
           <van-field
             :model-value="formData.violatorCompany"
@@ -41,11 +41,9 @@
             placeholder="违规说明"
           />
         </van-cell-group>
-        <div style="margin: 16px">
-          <!-- <van-action-bar> -->
-            <van-action-bar-button color="#be99ff" type="warning" text="保存" />
-            <van-action-bar-button color="#7232dd" type="danger" text="提交" />
-          <!-- </van-action-bar> -->
+        <div class="flexBox positionBottom">
+          <van-button round color="#1989fa"  text="保存" />
+          <van-button round color="#1989fa"  text="提交" />
         </div>
       </van-form>
     </div>
@@ -54,9 +52,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref,watch } from "vue";
 import {useRouter} from 'vue-router';
 const router = useRouter()
+const pageTitle = ref('违规登记')
 const formData = ref({
   violatorCompany:'',
     violatorName:'',
@@ -65,6 +64,23 @@ const formData = ref({
     description:'',
     clzpfilePath: "",//删除照片所需参数
 });
+const showApprove = ref(true); // 新建状态
+watch(
+  () => router.currentRoute.value.query,
+  (newValue) => {
+    console.log("newValue", newValue);
+    if (newValue.numId) {
+      // 数据详情
+      showApprove.value = true;
+      let repairId = newValue.numId;
+      pageTitle.value = '违规登记记录'
+      formData.value.violatorName = repairId;
+    } else {
+      showApprove.value = false;
+    }
+  },
+  { immediate: true }
+);
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
@@ -109,6 +125,17 @@ const deleteClzp=()=> {
 </script>
 
 <style lang="less" scoped>
+:deep(.van-button--round){
+  width: 3rem;
+}
+
+.positionBottom{
+    position: absolute;
+    bottom: 0;
+    background: #ffffff;
+    width: 100%;
+    height: 1.5rem;
+}
 .tableHeader {
   color: #666;
   font-size: 32px;
@@ -136,7 +163,7 @@ const deleteClzp=()=> {
   width: 44px;
 }
 :deep(.van-cell-group--inset) {
-  margin: 0;
+  margin: .16rem 0;
 }
 .cardBox {
   padding-top: 90px;

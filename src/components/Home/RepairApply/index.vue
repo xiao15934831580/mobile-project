@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <van-nav-bar
-      title="发起报修"
+      :title= 'pageTitle'
       left-text=""
       left-arrow
       @click-left="onClickLeft"
@@ -40,7 +40,83 @@
             </template>
           </van-field>
         </van-cell-group>
-
+        <van-tabs v-model:active="activeName" v-if="showApprove">
+          <van-tab title="故障明细" name="a">       
+            <div class="cardBox" v-for="(item,index) in formData.faultDetails" :key = 'index'>
+                <p class="tableIndex">序号：{{index+1}}</p>
+                <van-icon class="closeFault" @click="closeFault(index)" name="cross" />
+                <van-cell-group inset>
+                  <van-field
+                    v-model="item.faultTypeResult"
+                    is-link
+                    readonly
+                    name="picker"
+                    label="故障分类"
+                    placeholder="选择故障分类"
+                    @click="showfaultTypeConfirm(index)"
+                  />
+                  <van-popup v-model:show="showPicker" position="bottom">
+                    <van-picker
+                      :columns="item.faultType"
+                      @confirm="faultTypeConfirm"
+                      @cancel="showPicker"
+                    />
+                  </van-popup>
+                  <van-field
+                    v-model="item.faultPartResult"
+                    is-link
+                    readonly
+                    name="picker"
+                    label="故障部件"
+                    placeholder="选择故障部件"
+                    @click="showfaultPartButton(index)"
+                  />
+                  <van-popup v-model:show="showfaultPart" position="bottom">
+                    <van-picker
+                      :columns="item.faultPart"
+                      @confirm="faultPartConfirm"
+                      @cancel="showfaultPart = false"
+                    />
+                  </van-popup>
+                  <van-field
+                    v-model="item.faultPhenomenonResult"
+                    is-link
+                    readonly
+                    name="picker"
+                    label="故障现象"
+                    placeholder="选择故障现象"
+                    @click="showfaultPhenomenonButton(index)"
+                  />
+                  <van-popup v-model:show="showfaultPhenomenon" position="bottom">
+                    <van-picker
+                      :columns="item.faultPhenomenon"
+                      @confirm="faultPhenomenonConfirm"
+                      @cancel="showffaultPhenomenon = false"
+                    />
+                  </van-popup>
+                  <van-field
+                    v-model="item.message"
+                    rows="1"
+                    autosize
+                    label="其他说明"
+                    type="textarea"
+                    placeholder="请输入其他说明"
+                  />
+                </van-cell-group>
+              </div>
+          <van-icon @click.prevent="addFault" class="addFault" name="add-o" /></van-tab>
+          <van-tab title="审批进度" name="b" v-if="showApprove">
+          <div>
+            <van-steps direction="vertical"  :active="1" active-icon="success" active-color="#07c160" >
+              <van-step v-for="(approve,index) in formData.approveArr" :key = 'index'>
+                <h3>{{approve.name}}</h3>
+                <p>{{approve.time}}</p>
+              </van-step>
+            </van-steps>
+          </div>
+        </van-tab>
+      </van-tabs>
+      <div v-if="!showApprove">
         <div class="tableHeader">故障明细</div>
         <div class="cardBox" v-for="(item,index) in formData.faultDetails" :key = 'index'>
           <p class="tableIndex">序号：{{index+1}}</p>
@@ -106,20 +182,10 @@
 
         </div>
         <van-icon @click.prevent="addFault" class="addFault" name="add-o" />
-        <div v-if="showApprove" class="tableHeader">审批进度</div>
-        <div v-if="showApprove">
-          <van-steps direction="vertical"  :active="1" active-icon="success" active-color="#07c160" >
-            <van-step v-for="(approve,index) in formData.approveArr" :key = 'index'>
-              <h3>{{approve.name}}</h3>
-              <p>{{approve.time}}</p>
-            </van-step>
-          </van-steps>
-        </div>
-        <div style="margin: 16px">
-          <!-- <van-action-bar> -->
-            <van-action-bar-button color="#be99ff" type="warning" text="保存" />
-            <van-action-bar-button color="#7232dd" type="danger" text="提交" />
-          <!-- </van-action-bar> -->
+      </div>
+        <div style="margin: 16px" class="flexBox">
+          <van-button round color="#1989fa"  text="保存" />
+          <van-button round color="#1989fa"  text="提交" />
         </div>
       </van-form>
     </div>
@@ -131,6 +197,7 @@
 import { ref, watch } from "vue";
 import {useRouter} from 'vue-router';
 const router = useRouter()
+const pageTitle = ref('发起报修')
 const formData = ref({
   addNumber: "111", //报修单号
   vehicleNumber:'', //车辆编号
@@ -179,6 +246,7 @@ watch(
     if(newValue.numId){ // 数据详情
         showApprove.value = true;
         let repairId = newValue.numId;
+        pageTitle.value = '报修单详情'
         formData.value.addNumber = repairId
     }else{
       showApprove.value = false;
@@ -235,6 +303,9 @@ const addFault = () =>{
 </script>
 
 <style lang="less" scoped>
+:deep(.van-button--round){
+  width: 3rem;
+}
 .tableHeader {
   color: #666;
   font-size: .4rem;
@@ -263,8 +334,13 @@ const addFault = () =>{
   font-size: .35rem;
 }
 :deep(.van-cell-group--inset) {
-  margin: 0;
+  margin: .16rem 0;
+}
+:deep(.van-tabs__content){
   margin-top: .16rem;
+}
+:deep(.van-tabs__line){
+    background:#1989fa;
 }
 .cardBox {
   padding-top: 1.2rem;

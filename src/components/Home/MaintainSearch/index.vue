@@ -48,7 +48,7 @@
                     </div>
                   </div>
                   <div class="rightArrow">
-                    <van-icon @click="goRepair(item.id)" name="arrow" />
+                    <van-icon @click="goMaintain(item.id)" name="arrow" />
                   </div>
               </div>
           </div>
@@ -109,10 +109,10 @@ const repairData = ref({
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
-const goRepair = (id)=>{
+const goMaintain = (id)=>{
   router.push({
             //传递参数使用params的话，只能使用name指定(在route.js里面声明name)
-            path:'/repairapply',
+            path:'/maintainapply',
             query:{
               numId:id
             }

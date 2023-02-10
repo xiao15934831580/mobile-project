@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <van-nav-bar
-      title="外来人员登记"
+      :title="pageTitle"
       left-text=""
       left-arrow
       @click-left="onClickLeft"
     />
     <div class="main">
       <van-form @failed="onFailed">
-        <div class="tableHeader">主表区</div>
+        <!-- <div class="tableHeader">主表区</div> -->
         <van-cell-group inset>
           <van-field
             v-model="formData.company"
@@ -41,11 +41,9 @@
             placeholder="接待人电话"
           />
         </van-cell-group>
-        <div style="margin: 16px">
-          <!-- <van-action-bar> -->
-            <van-action-bar-button color="#be99ff" type="warning" text="保存" />
-            <van-action-bar-button color="#7232dd" type="danger" text="提交" />
-          <!-- </van-action-bar> -->
+        <div  class="flexBox positionBottom">
+          <van-button round color="#1989fa"  text="保存" />
+          <van-button round color="#1989fa"  text="提交" />
         </div>
       </van-form>
     </div>
@@ -54,9 +52,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref,watch } from "vue";
 import {useRouter} from 'vue-router';
 const router = useRouter()
+const pageTitle = ref('外来人员登记')
 const formData = ref({
   violatorCompany:'',
     company:'',
@@ -69,11 +68,37 @@ const formData = ref({
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
-
+const showApprove = ref(true); // 新建状态
+watch(
+  () => router.currentRoute.value.query,
+  (newValue) => {
+    console.log("newValue", newValue);
+    if (newValue.numId) {
+      // 数据详情
+      showApprove.value = true;
+      let repairId = newValue.numId;
+      pageTitle.value = '外来人员登记记录'
+      formData.value.company = repairId;
+    } else {
+      showApprove.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 </script>
 
 <style lang="less" scoped>
+:deep(.van-button--round){
+  width: 3rem;
+}
+.positionBottom{
+    position: absolute;
+    bottom: 0;
+    background: #ffffff;
+    width: 100%;
+    height: 1.5rem;
+}
 .tableHeader {
   color: #666;
   font-size: .4rem;
@@ -101,7 +126,7 @@ const onClickLeft = ()=>{
   width: 44px;
 }
 :deep(.van-cell-group--inset) {
-  margin: 0;
+  margin: .16rem 0;
 }
 .cardBox {
   padding-top: 90px;

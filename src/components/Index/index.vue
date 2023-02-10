@@ -1,12 +1,13 @@
 <template>
   <div class = 'container'>
-      <div class = 'header'>我是主页</div>
+      <!-- <div class = 'header'>我是主页</div> -->
       <div class = 'main'><router-view /></div>
       <div class = 'footer'>
           <van-tabbar route>
               <van-tabbar-item replace to="/home" icon="home-o">首页</van-tabbar-item>
-              <van-tabbar-item replace to="/task" icon="search">任务</van-tabbar-item>
-              <van-tabbar-item replace to="/my" icon="search">我的</van-tabbar-item>
+              <van-tabbar-item replace to="/task" icon="todo-list-o">任务</van-tabbar-item>
+              <van-tabbar-item replace to="/my" icon="contact">我的</van-tabbar-item>
+              
           </van-tabbar>
       </div>
   </div>
@@ -29,8 +30,10 @@ import Footer from '../Footer/index.vue';
     .main{
         width: 100%;
         flex: 1;
-        overflow-y: scroll;
+        // overflow-y: auto;
     }
 }
-
+:deep(.van-tabs__line){
+    background:#1989fa;
+}
 </style>

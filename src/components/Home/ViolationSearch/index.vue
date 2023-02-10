@@ -8,11 +8,8 @@
     />
     <div class="main">
       <div class="searchBox">
-         <van-field v-model="value" label="单号" placeholder="单号" />
-         <van-field v-model="value" label="车牌号" placeholder="车牌号" />
-         <van-field v-model="value" label="车辆编号" placeholder="车辆编号" />
-         <van-field v-model="value" label="单据状态" placeholder="单据状态" />
-         <van-field v-model="value" label="当前审批人" placeholder="当前审批人" />
+         <van-field v-model="value" label="违规人所属公司" placeholder="违规人所属公司" />
+         <van-field v-model="value" label="违规人姓名" placeholder="违规人姓名" />
         <div class='flexBox'>
           <van-button round type="success" size="small">重置</van-button>
           <van-button round type="success" size="small">查询</van-button>
@@ -48,7 +45,7 @@
                     </div>
                   </div>
                   <div class="rightArrow">
-                    <van-icon @click="goRepair(item.id)" name="arrow" />
+                    <van-icon @click="goViolation(item.id)" name="arrow" />
                   </div>
               </div>
           </div>
@@ -109,10 +106,10 @@ const repairData = ref({
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
-const goRepair = (id)=>{
+const goViolation = (id)=>{
   router.push({
             //传递参数使用params的话，只能使用name指定(在route.js里面声明name)
-            path:'/repairapply',
+            path:'/violation',
             query:{
               numId:id
             }
