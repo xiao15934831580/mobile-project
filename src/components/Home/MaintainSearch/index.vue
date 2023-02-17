@@ -8,43 +8,47 @@
     />
     <div class="main">
       <div class="searchBox">
-         <van-field v-model="value" label="单号" placeholder="单号" />
-         <van-field v-model="value" label="车牌号" placeholder="车牌号" />
-         <van-field v-model="value" label="车辆编号" placeholder="车辆编号" />
-         <van-field v-model="value" label="单据状态" placeholder="单据状态" />
-         <van-field v-model="value" label="当前审批人" placeholder="当前审批人" />
+          <van-field v-model="searchValue.billCode" label="单号" placeholder="单号" />
+         <van-field v-model="searchValue.carNumber" label="车牌号" placeholder="车牌号" />
+         <van-field v-model="searchValue.carCode" label="车辆编号" placeholder="车辆编号" />
+         <div class="flexBetween">
+            <p>审批状态</p>
+              <van-dropdown-menu>
+                <van-dropdown-item v-model="searchValue.apvStatus" :options="option1" />
+              </van-dropdown-menu>
+         </div>
         <div class='flexBox'>
-          <van-button round type="success" size="small">重置</van-button>
-          <van-button round type="success" size="small">查询</van-button>
+          <van-button round type="success" size="small" @click="resetData">重置</van-button>
+          <van-button round type="success" size="small" @click="queryBillFun">查询</van-button>
         </div>
       </div>
       <div class="contantBox">
           <div class="singBox"  v-for=" (item,index) in repairData.repairArr" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
-                    {{item.addNumber}}
+                    {{item.billCode}}
                 </p>
                 <p class="zhuangtai">
-                    {{item.state}}
+                    {{item.apvStatusLbl}}
                 </p>
               </div>
               <div class="bottomBox">
                   <div class="leftBox">
                     <div class="rowMsg">
                       <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                      <p>{{item.licensePlateNumber}}</p>
+                      <p>{{item.carNumber}}</p>
                     </div>
                     <div class="rowMsg">
                       <p>车辆编号:&nbsp;&nbsp;</p>
-                      <p>{{item.vehicleNumber}}</p>
+                      <p>{{item.carCode}}</p>
                     </div>
                      <div class="rowMsg">
                       <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.modelNumber}}</p>
+                      <p>{{item.carBrandType}}</p>
                     </div>
                     <div class="rowMsg">
                       <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.startTime}}</p>
+                      <p>{{item.createdDate}}</p>
                     </div>
                   </div>
                   <div class="rightArrow">
@@ -61,7 +65,21 @@
 <script setup>
 import { ref } from "vue";
 import {useRouter} from 'vue-router';
+import { onBeforeMount } from "vue";
+import { getBillDropDowns as getBillDropDowns,queryBill as queryBill } from '@/api/home'
 const router = useRouter()
+const  option1 = ref([]);
+const searchValue = ref({
+  apvStatus:"", //审批状态
+  billCode:'', //单号
+  billType:'BYD', //单据类型
+  carCode:'', //车辆编号
+  carNumber:'' , //车牌号
+  limit:'10',// 显示条数
+  pageNum:'1', //页码
+  taskType:'',// 任务类型
+  urgencyLevel:'' //紧急程度
+})    
 const repairData = ref({
     repairArr:[
           {
@@ -72,42 +90,26 @@ const repairData = ref({
             startTime:'2023-03-02 14:02:46', //发起时间
             state:'待提交', //状态
             id:'1'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'2'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'3'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
           }
     ]
 }
 );
 const onClickLeft = ()=>{
   router.push({ path:'home'})
+}
+onBeforeMount(() => {
+  getBillDropDown();
+  queryBillFun()
+});
+const getBillDropDown = ()=>{
+    getBillDropDowns().then((res)=>{
+       if(res.code === 200){
+          option1.value = res.data.apvType
+          console.log(option1.value)
+       }else{
+
+       }
+    })
 }
 const goMaintain = (id)=>{
   router.push({
@@ -117,6 +119,37 @@ const goMaintain = (id)=>{
               numId:id
             }
             })
+}
+/**
+ * 重置
+ */
+const resetData =()=>{
+  let obj = {
+    apvStatus:"", //审批状态
+    billCode:'', //单号
+    billType:'BYD', //单据类型
+    carCode:'', //车辆编号
+    carNumber:'' , //车牌号
+    limit:'10',// 显示条数
+    pageNum:'1', //页码
+    taskType:'',// 任务类型
+    urgencyLevel:'' //紧急程度
+  }
+  searchValue.value = obj
+}  
+/**
+ * 获取查询数据（初始化/查询）
+ */
+const queryBillFun = ()=>{
+  let obj = searchValue.value;
+  queryBill(obj).then((res)=>{
+    if(res.code === 200){
+          repairData.value.repairArr = res.data.records
+          console.log(res.data)
+       }else{
+
+       }
+  })
 }
 </script>
 
@@ -232,5 +265,19 @@ const goMaintain = (id)=>{
 }
 .flexBox{
   margin-top: 24px;
+}
+:deep(.van-dropdown-menu__bar){
+  background: #ffffff;
+  box-shadow: none;
+}
+.flexBetween{
+  // border-bottom: 0.02667rem solid #ebedf0;
+  margin: 0.05rem 0.52667rem 0 0.42667rem;
+  height: 1.1538rem;
+  p{
+    font-size: 0.37333rem;
+    color: #646566;
+    
+  }
 }
 </style>

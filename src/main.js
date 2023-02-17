@@ -5,20 +5,24 @@ import router from './router'
 import 'amfe-flexible'
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
-import { Button,Tabbar,Uploader,Step,Dialog , Steps,RadioGroup, Radio ,Search, TabbarItem,row,DatetimePicker ,icon,checkbox,Space,Form, Field, Switch,CellGroup,Picker   } from 'vant';
+import { Button,Tabbar,Uploader,Step,Dialog , Steps,RadioGroup, Radio ,Search, TabbarItem,DatetimePicker ,Space,Form, Field, Switch,CellGroup,Picker   } from 'vant';
 
 import 'vant/lib/index.css';
+import axios from 'axios';
+import md5 from 'js-md5';
+import * as Base64 from 'js-base64'
+import '@/router/permission'
 import '@/assets/css/global.less';
-// import vue from 'vue';
-// vue.config.productionTip = false
-createApp(App).use(router).use(store)
+const app = createApp(App)
+// useVantUI(app)
+app.config.globalProperties.$axios = axios;
+app.config.globalProperties.$md5 = md5;
+app.config.globalProperties.$Base64 = Base64;
+app.use(router).use(store)
 .use(Button)
 .use(Antd)
 .use(Tabbar)
-.use(row)
 .use(Dialog)
-.use(icon)
-.use(checkbox)
 .use(Radio)
 .use(RadioGroup)
 .use(Form)

@@ -3,7 +3,7 @@ const http = axios.create({
   baseURL: '/repair', //process.env.VUE_APP_BASE_API
   // timeout: 1800000,
 })
-http.defaults.headers.post["loginClient"] = "pc";
+http.defaults.headers.post["loginClient"] = "app";
 //请求拦截
 http.interceptors.request.use(
   (config) => {

@@ -39,9 +39,6 @@
             <van-field v-model="passWordData.confirmPassword" type="password" label="新密码" />
         </a-modal>
       </div>
-      <!-- <div class="layout" @click="layOut">
-          退出登录
-      </div> -->
       <div  class="layout" @click="layOut">
         <van-button round block type="primary" native-type="submit">
           退出登录

@@ -1,5 +1,5 @@
 <template>
-    <van-form class= 'loginBox'>
+    <van-form class= 'loginBox' ref='form'>
           <div class="vanRow" style="">
             <van-row class="vanInput" >
               <van-row>
@@ -53,20 +53,31 @@
 
 <script setup>
 import { useStore } from "vuex";
-import { ref, onMounted } from "vue";
+import { ref, onMounted,getCurrentInstance } from "vue";
 const store = useStore();
+const { proxy } = getCurrentInstance();
+const form = ref('')
 const loginForm = ref(
     {
                 username: "",
                 password: "",
                 rememberMe: false,
-                code: "",
-                uuid: ""
           }
 ) 
 const handleLogin = () => {
-    console.log(store)
-    store.dispatch("app/login",'111');
+  form.value.validate().then(()=>{
+      let obj = {
+        username: loginForm.value.username,
+        password: proxy.$md5(
+          loginForm.value.password + "b459dcbe8a3d46d49dfdc39c12df854e"
+        ),
+        loginClient: "app",
+      };
+      store.dispatch("app/login",obj);
+  })
+  .catch (()=> {
+  })
+
 };
 onMounted(()=> {
     if(!!localStorage.getItem("rememberMe") &&localStorage.getItem("rememberMe") =='true'){

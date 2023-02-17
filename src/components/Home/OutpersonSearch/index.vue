@@ -8,40 +8,44 @@
     />
     <div class="main">
       <div class="searchBox">
-         <van-field v-model="value" label="违规人所属公司" placeholder="违规人所属公司" />
-         <van-field v-model="value" label="接待人" placeholder="接待人" />
+         <van-field v-model="searchValue.company" label="违规人所属公司" placeholder="违规人所属公司" />
+         <van-field v-model="searchValue.receiver" label="接待人" placeholder="接待人" />
           <div class='flexBox'>
-            <van-button round type="success" size="small">重置</van-button>
-            <van-button round type="success" size="small">查询</van-button>
+            <van-button round type="success" size="small" @click="resetData">重置</van-button>
+            <van-button round type="success" size="small" @click="searchData">查询</van-button>
           </div>
       </div>
       <div class="contantBox">
           <div class="singBox"  v-for=" (item,index) in repairData.repairArr" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
-                    {{item.addNumber}}
+                    {{item.company}}
                 </p>
                 <p class="zhuangtai">
-                    {{item.state}}
+                    {{item.leader}}
                 </p>
               </div>
               <div class="bottomBox">
                   <div class="leftBox">
-                    <div class="rowMsg">
-                      <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                    <!-- <div class="rowMsg">
+                      <p>所属公司:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
                       <p>{{item.licensePlateNumber}}</p>
                     </div>
                     <div class="rowMsg">
-                      <p>车辆编号:&nbsp;&nbsp;</p>
+                      <p>负责人:&nbsp;&nbsp;</p>
                       <p>{{item.vehicleNumber}}</p>
-                    </div>
+                    </div> -->
                      <div class="rowMsg">
-                      <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.modelNumber}}</p>
+                      <p>接待人:&nbsp;&nbsp;</p>
+                      <p>{{item.receiver}}</p>
                     </div>
                     <div class="rowMsg">
-                      <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.startTime}}</p>
+                      <p>接待人电话:&nbsp;&nbsp;</p>
+                      <p>{{item.receiverPhoneNum}}</p>
+                    </div>
+                    <div class="rowMsg">
+                      <p>入场时间:&nbsp;&nbsp;</p>
+                      <p>{{item.visitTime}}</p>
                     </div>
                   </div>
                   <div class="rightArrow">
@@ -58,47 +62,24 @@
 <script setup>
 import { ref } from "vue";
 import {useRouter} from 'vue-router';
+import { onBeforeMount } from "vue";
+import { queryVisRecord as queryVisRecord} from '@/api/home'
 const router = useRouter()
+const searchValue = ref({
+  "company": "",
+  "limit": 10,
+  "pageNum": 1,
+  "receiver": ""
+})
 const repairData = ref({
     repairArr:[
           {
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'1'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'2'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'3'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
+            company: "", //所属公司
+            leader:'', //负责人
+            leaderPhoneNum:'', //负责人电话
+            receiver:'', //接待人
+            receiverPhoneNum:'', //接待人电话
+            visitTime:'',//入场时间
           }
     ]
 }
@@ -106,6 +87,9 @@ const repairData = ref({
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
+onBeforeMount(() => {
+  searchData()
+});
 const goOutperson = (id)=>{
   router.push({
             //传递参数使用params的话，只能使用name指定(在route.js里面声明name)
@@ -114,6 +98,22 @@ const goOutperson = (id)=>{
               numId:id
             }
             })
+}
+const resetData = ()=>{
+  let obj ={
+  "company": "",
+  "limit": 10,
+  "pageNum": 1,
+  "receiver": ""
+  }
+  searchValue.value = obj
+}
+const searchData =()=>{
+  let obj = searchValue.value
+  queryVisRecord(obj).then((res)=>{
+    console.log(res.data)
+    repairData.value.repairArr = res.data.records;
+  })
 }
 </script>
 

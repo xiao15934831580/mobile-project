@@ -12,10 +12,11 @@
       <van-tab name="fenpei" title="待分配"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
       <van-tab name="paixiu" title="待派修"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
       <van-tab name="yanshou" title="待验收"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="weibao" title="待维保">内容 2</van-tab>
-      <van-tab name="weixiu" title="维修中">内容 3</van-tab>
+      <van-tab name="daiweibao" title="待维保">内容 2</van-tab>
+      <van-tab name="weibao" title="维保中">内容 3</van-tab>
       <van-tab name="chuli" title="已处理">内容 2</van-tab>
       <van-tab name="yiyanshou" title="已验收">内容 3</van-tab>
+      <!-- <van-tab name="baoxiu" title="已报修">内容 3</van-tab> -->
     </van-tabs>
   </div>
   <van-popup  v-model:show="isShowSearchBOx" position="right" :style="{  height: '100%',width:'65%' }" closeable

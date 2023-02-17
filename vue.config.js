@@ -10,7 +10,7 @@ module.exports = defineConfig({
       }),
     ],
   },
-  lintOnSave: false,
+  lintOnSave: false,  
   css: {
     loaderOptions: {
       sass: {

@@ -1,34 +1,38 @@
 <template>
   <div class="container">
     <van-nav-bar
-      title="保养申请"
+      :title= 'pageTitle'
       left-text=""
       left-arrow
       @click-left="onClickLeft"
     />
     <div class="main">
-      <van-form @failed="onFailed">
+      <van-form @failed="onFailed" ref="form">
         <van-cell-group class="topBox" inset>
           <van-field
-            :model-value="formData.addNumber"
+            :model-value="formData.billCode"
             readonly
             label="报修单号"
             placeholder="报修单号"
+            :rules="[{ required: true, message: '请填写报修单号' }]"
           />
           <van-field
-            v-model="formData.vehicleNumber"
+            v-model="formData.carCode"
             label="车辆编号"
             placeholder="车辆编号"
+            :rules="[{ required: true, message: '请填写车辆编号' }]"
           />
           <van-field
-            v-model="formData.licensePlateNumber"
+            v-model="formData.carNumber"
             label="车牌号"
             placeholder="车牌号"
+            :rules="[{ required: true, message: '请填写车牌号' }]"
           />
           <van-field
-            v-model="formData.modelNumber"
+            v-model="formData.carBrandType"
             label="品牌型号"
             placeholder="品牌型号"
+            :rules="[{ required: true, message: '请填写品牌型号' }]"
           />
         </van-cell-group>
         <van-tabs v-model:active="activeName" v-if="showApprove">
@@ -53,10 +57,11 @@
                   label="保养项目/内容"
                   placeholder="选择保养项目/内容"
                   @click="showPickerButton(index)"
+                  :rules="checkMaintainItem"
                 />
                 <van-popup v-model:show="showPicker" position="bottom">
                   <van-picker
-                    :columns="item.maintainType"
+                    :columns="formData.dropDowns.maintainItem"
                     @confirm="maintainTypeConfirm"
                     @cancel="showPicker = false"
                   />
@@ -65,11 +70,13 @@
                   v-model="item.maintainCycle"
                   label="保养周期（h）"
                   placeholder="保养周期（h）"
+                  :rules="[{ required: true, message: '请输入保养周期（h）' }]"
                 />
                 <van-field
                   v-model="item.replacement"
                   label="油品或滤芯型号"
                   placeholder="油品或滤芯型号"
+                  :rules="[{ required: true, message: '请输入油品或滤芯型号' }]"
                 />
                 <van-field
                   v-model="item.lastExecHour"
@@ -127,10 +134,10 @@
           </van-tab>
           <van-tab title="审批进度" name="b" v-if="showApprove">
           <div>
-            <van-steps direction="vertical"  :active="1" active-icon="success" active-color="#07c160" >
-              <van-step v-for="(approve,index) in formData.approveArr" :key = 'index'>
-                <h3>{{approve.name}}</h3>
-                <p>{{approve.time}}</p>
+            <van-steps direction="vertical"  :active="approveActive" active-icon="success" active-color="#07c160" >
+              <van-step v-for="(approve,index) in formData.apvDetails" :key = 'index'>
+                <h3>{{approve.apvDesc}}({{approve.approver}})</h3>
+                <p>{{approve.apvTime}}</p>
               </van-step>
             </van-steps>
           </div>
@@ -158,10 +165,11 @@
                 label="保养项目/内容"
                 placeholder="选择保养项目/内容"
                 @click="showPickerButton(index)"
+                :rules="checkMaintainItem"
                 />
                 <van-popup v-model:show="showPicker" position="bottom">
                 <van-picker
-                    :columns="item.maintainType"
+                    :columns="formData.dropDowns.maintainItem"
                     @confirm="maintainTypeConfirm"
                     @cancel="showPicker = false"
                 />
@@ -170,11 +178,13 @@
                 v-model="item.maintainCycle"
                 label="保养周期（h）"
                 placeholder="保养周期（h）"
+                :rules="[{ required: true, message: '请输入保养周期（h）' }]"
                 />
                 <van-field
                 v-model="item.replacement"
                 label="油品或滤芯型号"
                 placeholder="油品或滤芯型号"
+                :rules="[{ required: true, message: '请输入油品或滤芯型号' }]"
                 />
                 <van-field
                 v-model="item.lastExecHour"
@@ -227,8 +237,8 @@
             />
         </div>
         <div style="margin: 16px" class="flexBox">
-          <van-button round color="#1989fa"  text="保存" />
-          <van-button round color="#1989fa"  text="提交" />
+          <van-button round color="#1989fa"  native-type="submit" @click="saveRepair"  text="保存" />
+          <van-button round color="#1989fa" native-type="submit" @click="commitRepair" text="提交" />
         </div>
       </van-form>
     </div>
@@ -238,21 +248,23 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { onBeforeMount } from "vue";
+import { getBillCodeAndDropDowns as getBillCodeAndDropDowns,getBillData as getBillData,saveNewBill as saveNewBill, commitNewRepBill as commitNewRepBill} from '@/api/home'
 const router = useRouter();
+const pageTitle = ref('保养申请')
+const form= ref('')
 const formData = ref({
-  addNumber: "111",
-  vehicleNumber: "",
-  licensePlateNumber: "",
-  modelNumber: "",
+  billCode: "", //报修单号
+  carCode:'', //车辆编号
+  carNumber:'', //车牌号
+  carBrandType:'', //品牌型号
+  dropDowns:{
+    maintainItem:["发动机油", "驱动桥油", "变速箱油", "液压油", "空气内外滤芯", "空调外滤", "空调内滤", "燃油呼吸器", "发动滤芯"],
+    repairman:["weqwe", "张三", "王五", "李四"]
+  },
   maintainDetails: [
     {
-      maintainType: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-      maintainItemLbl: "", //保养项目
-      maintainPart: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-      maintainPartResult: "",
-      maintainPhenomenon: ["损坏", "异响", "故障"],
-      maintainPhenomenonResult: "",
-      message: "1",
+      message: "",
       maintainCycle: "", //保养周期
       replacement: "", //油品或滤芯型号
       lastExecHour: "", //上次执行台时/h
@@ -262,29 +274,13 @@ const formData = ref({
       executor: "", //责任人
       remark: "", //备注
     },
-  ],
-    approveArr:[
-        {
-        name:'已审批',
-        time:'2023-06-03'
-        },
-        {
-        name:'待审批',
-        time:'2023-06-03'
-        },
-            {
-        name:'待审批',
-        time:'2023-06-03'
-        },
-            {
-        name:'待审批',
-        time:'2023-06-03'
-        }
   ]
 });
 const onClickLeft = () => {
   router.push({ path: "home" });
 };
+const numId = ref()
+const approveActive=ref('')
 const showApprove = ref(true); // 新建状态
 watch(
   () => router.currentRoute.value.query,
@@ -293,14 +289,37 @@ watch(
     if (newValue.numId) {
       // 数据详情
       showApprove.value = true;
-      let repairId = newValue.numId;
-      formData.value.addNumber = repairId;
+      numId.value = newValue.numId;
+      pageTitle.value = '保养单详情'
     } else {
       showApprove.value = false;
     }
   },
   { immediate: true }
 );
+onBeforeMount(() => {
+  if(showApprove.value){
+    getBillData(numId.value).then((res)=>{
+      if(res.code === 200){
+       formData.value=res.data
+       approveActive.value = res.data.apvDetails.length;
+      }else{
+
+      }
+    })
+  }else{
+    getBillCodeAndDropDown();
+  }
+});
+const getBillCodeAndDropDown = ()=>{
+    getBillCodeAndDropDowns('BYD').then((res)=>{
+       if(res.code === 200){
+          formData.value.billCode = res.data.billCode
+       }else{
+
+       }
+    })
+}
 const showPicker = ref(false);
 const maintainIndex = ref("");
 const showPickerButton = (index) => {
@@ -335,16 +354,95 @@ const closemaintain = (index) => {
 };
 const addmaintain = () => {
   let obj = {
-    maintainType: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-    maintainItemLbl: "",
-    maintainPart: ["杭州", "宁波", "温州", "绍兴", "湖州", "嘉兴", "金华"],
-    maintainPartResult: "",
-    maintainPhenomenon: ["损坏", "异响", "故障"],
-    maintainPhenomenonResult: "",
-    message: "",
-  };
+      message: "",
+      maintainItemLbl:'',//保养项目
+      maintainCycle: "", //保养周期
+      replacement: "", //油品或滤芯型号
+      lastExecHour: "", //上次执行台时/h
+      planExecHour: "", // 本次计划执行台时/h
+      realExecDate: "", // 实际执行日期
+      realExecHour: "", //实际执行台时/h
+      executor: "", //责任人
+      remark: "", //备注
+    }
   formData.value.maintainDetails.push(obj);
 };
+const checkMaintainItem = ref([
+   {
+      required:true,
+      message: '请选择保养项目/内容',
+      trigger:'onChange',
+  },{
+     validator: value => {
+       let arr = []
+       for(let item of JSON.parse(JSON.stringify(formData.value.maintainDetails))){
+         if(value === item.maintainItemLbl){
+           arr.push(item)
+         }
+       }
+       if(arr.length>1){
+         return false
+       }
+      },
+      message: '保养项目/内容不能重复',
+      trigger: 'onChange',
+  }
+])
+
+/**
+ * 保存
+ */
+const saveData = ()=>{
+      form.value.validate().then(()=>{
+        let obj = {
+           billCode: formData.value.billCode, //报修单号
+          carCode:formData.value.carCode, //车辆编号
+          carNumber:formData.value.carNumber, //车牌号
+          carBrandType:formData.value.carBrandType, //品牌型号
+          maintainDetails:JSON.parse(JSON.stringify(formData.value.maintainDetails)),
+          billType:'BYD'
+        }
+        saveNewBill(obj).then((res)=>{
+          if(res.code === 200){
+            return true
+          }else{
+            return false
+          }
+        })
+  })
+  .catch (()=>{
+    return false
+  }) 
+}
+const saveRepair = ()=>{
+  saveData()
+
+}
+/**
+ * 提交
+ */
+const commitRepair=()=>{
+    form.value.validate().then(()=>{
+        let obj = {
+           billCode: formData.value.billCode, //报修单号
+          carCode:formData.value.carCode, //车辆编号
+          carNumber:formData.value.carNumber, //车牌号
+          carBrandType:formData.value.carBrandType, //品牌型号
+          maintainDetails:JSON.parse(JSON.stringify(formData.value.maintainDetails)),
+          billType:'BXD'
+        }
+        commitNewRepBill(obj).then((res)=>{
+          if(res.code === 200){
+            router.push({ path:'home'})
+          }else{
+              
+          }
+        })
+  })
+  .catch (()=>{
+    console.log('错误')
+  }) 
+}
 </script>
 
 <style lang="less" scoped>

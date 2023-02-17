@@ -4,9 +4,15 @@
     <img src='../../assets/images/true.jpg' alt="背景图片" class="bgImg"/>
     <div>
           <van-grid :column-num="3">
-            <van-grid-item @click="turnTask('paixiu')" icon="home-o" text="待派修" dot />
-            <van-grid-item @click="turnTask('yanshou')" icon="search" text="待验收" badge="99+" />
-            <van-grid-item @click="turnTask('chuli')" icon="search" text="已处理" badge="99+" />
+            <van-grid-item @click="turnTask('paixiu')" icon="home-o" text="待派修" :badge= 'taskData.dpx' />
+            <van-grid-item @click="turnTask('yanshou')" icon="search" text="待验收" :badge= 'taskData.dys' />
+            <van-grid-item @click="turnTask('chuli')" icon="search" text="已处理" :badge="taskData.ycl" />
+            <van-grid-item @click="turnTask('chuli')" icon="search" text="已报修" :badge="taskData.ybx" />
+            <van-grid-item @click="turnTask('fenpei')" icon="search" text="待分配" :badge="taskData.dfp" />
+            <van-grid-item @click="turnTask('daiweibao')" icon="search" text="待维保" :badge="taskData.dwb" />
+            <van-grid-item @click="turnTask('weibao')" icon="search" text="维保中" :badge="taskData.wbz" />
+            <van-grid-item @click="turnTask('yiyanshou')" icon="search" text="已验收" :badge="taskData.yys" />
+            <van-grid-item @click="turnTask('tijiao')" icon="search" text="待提交" :badge="taskData.dtj" />
           </van-grid>
     </div>
 
@@ -26,6 +32,8 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { getTaskCount as getTaskCount } from '@/api/home'
+import { onBeforeMount } from "vue";
 const router = useRouter();
 const columns = ref([
       { text: '杭州', value: 'Hangzhou' },
@@ -36,7 +44,30 @@ const columns = ref([
     ]);
 const fieldValue = ref('');
 const showPicker = ref(false);
+const taskData=ref({
+    "dfp": 0,
+    "dpx": 0,
+    "dtj": 0,
+    "dwb": 0,
+    "dys": 0,
+    "wbz": 0,
+    "ybx": 0,
+    "ycl": 0,
+    "yys": 0
+})
+onBeforeMount(() => {
+  getTask();
+});
+const getTask = ()=>{
+  getTaskCount().then((res)=>{
+      if(res.code === 200){
+        taskData.value = res.data
+        console.log(taskData.value)
+      }else{
 
+      }
+  })
+}
 const onConfirm = ({ selectedOptions }) => {
   showPicker.value = false;
   fieldValue.value = selectedOptions[0].text;
@@ -55,9 +86,6 @@ const turnTask = (name)=>{
 <style lang="less" scoped>
 :deep(.van-space--horizontal .van-space-item){
   width:4rem
-}
-:deep(.van-button--normal){
-  // width:100%
 }
 :deep(.van-col--8){
   text-align: center;

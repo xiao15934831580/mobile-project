@@ -7,7 +7,7 @@
       @click-left="onClickLeft"
     />
     <div class="main">
-      <van-form @failed="onFailed">
+      <van-form @failed="onFailed" ref="form">
         <!-- <div class="tableHeader">主表区</div> -->
         <van-cell-group inset>
           <van-field
@@ -24,26 +24,30 @@
             v-model="formData.leader"
             label="负责人"
             placeholder="负责人"
+            :rules="[{ required: true, message: '请输入负责人' }]"
           />
            <van-field
             v-model="formData.leaderPhoneNum"
             label="负责人电话"
             placeholder="负责人电话"
+            :rules="[{ required: true, message: '请输入负责人电话' }]"
           />
            <van-field
             v-model="formData.receiver"
             label="接待人"
             placeholder="接待人"
+            :rules="[{ required: true, message: '请输入接待人' }]"
           />
            <van-field
             v-model="formData.receiverPhoneNum"
             label="接待人电话"
             placeholder="接待人电话"
+            :rules="[{ required: true, message: '请输入接待人电话' }]"
           />
         </van-cell-group>
         <div  class="flexBox positionBottom">
-          <van-button round color="#1989fa"  text="保存" />
-          <van-button round color="#1989fa"  text="提交" />
+          <van-button round color="#1989fa" native-type="submit" @click="saveOutperson" text="保存" />
+          
         </div>
       </van-form>
     </div>
@@ -54,21 +58,40 @@
 <script setup>
 import { ref,watch } from "vue";
 import {useRouter} from 'vue-router';
+import { saveVisitorRecord as saveVisitorRecord,getVisRecordById as getVisRecordById} from '@/api/home'
+import { onBeforeMount } from "vue";
 const router = useRouter()
+const form = ref('')
 const pageTitle = ref('外来人员登记')
 const formData = ref({
-  violatorCompany:'',
+    violatorCompany:'',
     company:'',
     visitorCount:'',
     leader:'',
     leaderPhoneNum:'',
     receiver:'',
-    receiverPhoneNum:''
+    receiverPhoneNum:'',
+    id:''
 });
 const onClickLeft = ()=>{
   router.push({ path:'home'})
 }
 const showApprove = ref(true); // 新建状态
+const numId =ref('')
+onBeforeMount(() => {
+  if(showApprove.value){
+    getVisRecordById(numId.value).then((res)=>{
+      if(res.code === 200){
+       formData.value=res.data
+      //  approveActive.value = res.data.apvDetails.length;
+      }else{
+
+      }
+    })
+  }else{
+    getBillCodeAndDropDown();
+  }
+});
 watch(
   () => router.currentRoute.value.query,
   (newValue) => {
@@ -76,16 +99,28 @@ watch(
     if (newValue.numId) {
       // 数据详情
       showApprove.value = true;
-      let repairId = newValue.numId;
+      numId.value = newValue.numId
       pageTitle.value = '外来人员登记记录'
-      formData.value.company = repairId;
+      // formData.value.company = repairId;
     } else {
       showApprove.value = false;
     }
   },
   { immediate: true }
 );
-
+const saveOutperson = ()=>{
+  form.value.validate().then(()=>{
+    saveVisitorRecord(formData.value).then((res)=>{
+       if(res.code === 200){
+            router.push({ path:'home'})
+          }else{
+            
+          }
+    })
+  })
+  .catch (()=> {
+  })
+}
 </script>
 
 <style lang="less" scoped>
