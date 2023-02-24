@@ -3,33 +3,37 @@
           <div class="singBox"  v-for=" (item,index) in arrData" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
-                    {{item.addNumber}}
+                    {{item.billCode}}
                 </p>
                 <p class="zhuangtai">
-                    {{item.state}}
+                    {{item.apvStatusLbl}}
                 </p>
               </div>
               <div class="bottomBox">
                   <div class="leftBox">
                     <div class="rowMsg">
                       <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                      <p>{{item.licensePlateNumber}}</p>
+                      <p>{{item.carNumber}}</p>
                     </div>
                     <div class="rowMsg">
                       <p>车辆编号:&nbsp;&nbsp;</p>
-                      <p>{{item.vehicleNumber}}</p>
+                      <p>{{item.carCode}}</p>
                     </div>
                      <div class="rowMsg">
                       <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.modelNumber}}</p>
+                      <p>{{item.carBrandType}}</p>
                     </div>
                     <div class="rowMsg">
                       <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.startTime}}</p>
+                      <p>{{item.updatedDate}}</p>
+                    </div>
+                    <div class="rowMsg">
+                      <p>紧急程度:&nbsp;&nbsp;</p>
+                      <p>{{item.urgencyLevelLbl}}</p>
                     </div>
                   </div>
                   <div class="rightArrow">
-                    <van-icon @click="goPage(item.id)" name="arrow" />
+                    <van-icon @click="goPage(item)" name="arrow" />
                   </div>
               </div>
           </div>
@@ -57,14 +61,18 @@ watch(
   },
   { deep: true, immediate: true }
 );
-const goPage = (id)=>{
-     router.push({
+const goPage = (item)=>{
+    console.log(item)
+         router.push({
             //传递参数使用params的话，只能使用name指定(在route.js里面声明name)
-            path:'/maintainapply',
+            path: item.type === '保养单'? '/maintainapply':'/repairapply',
             query:{
-              numId:id
+              numId:item.id,
+              status:item.apvStatus,
+              type:'task'
             }
             })
+
 }
 </script>
 <style lang="less" scoped>

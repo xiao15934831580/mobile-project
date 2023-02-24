@@ -4,8 +4,8 @@
           <p class="personCenter">个人中心</p>
           <div class="bgColor">
               <div class="personName">
-                  <p>小小肖</p>
-                  <p>点检员</p>
+                  <p>{{user.username}}</p>
+                  <p>{{user.realName}}</p>
               </div>
               <div class="personImg">
 
@@ -21,23 +21,22 @@
           label="修改密码"
           @click="showPassWord = true"
         />
-        <a-modal
-                :visible="showPassWord"
-                :closable="false"
-                :maskClosable="false"
-                width="80%"
-                :cancelButtonProps="{ props: {type: 'normal'} }"
-                @ok="handleOk"
-                @cancel="handleCancel"
-                centered
-                ok-text="确认"
-                cancel-text="取消"
-                :bodyStyle = "{height:'4rem'}"
-        >
-            <van-field v-model="passWordData.password" type="password" label="原密码" />
-            <van-field v-model="passWordData.newPassword" type="password" label="新密码" />
-            <van-field v-model="passWordData.confirmPassword" type="password" label="新密码" />
-        </a-modal>
+        <VanDialog 
+              :show='showPassWord'
+              title="修改密码"
+              :show-cancel-button = 'true'
+              @cancel='handleCancel'
+              @confirm='handleOk'>
+              <van-form @failed="onFailed" ref="form">
+              <van-cell-group inset>
+                <van-field v-model="passWordData.oldPassword" type="password" label="原密码" placeholder="输入原密码"  :rules="[{ required: true, message: '请输入原密码' }]"/>
+                <van-field v-model="passWordData.newPassword" type="password" label="新密码" placeholder="输入新密码" :rules="[{ required: true, message: '请输入新密码' }]"/>
+                <van-field v-model="passWordData.confirmPassword" type="password" label="新密码"  placeholder="输入新密码"
+                  :rules="[{ required: true, message: '请确认新密码' }]"
+                />
+                </van-cell-group>
+          </van-form>
+        </VanDialog>
       </div>
       <div  class="layout" @click="layOut">
         <van-button round block type="primary" native-type="submit">
@@ -48,20 +47,46 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref ,getCurrentInstance} from 'vue';
 import { useRouter } from "vue-router";
 import store from '@/store'
+import { Dialog } from 'vant';
+import { updatePassword as updatePassword} from '@/api/home'
+const {proxy} = getCurrentInstance();
 const router = useRouter();
 const showPassWord = ref(false);
+const form = ref('');
+const VanDialog = Dialog.Component;
 // showPassWord.value = false
 const passWordData = ref({
   oldPassword:'',
   newPassword:'',
   confirmPassword:''
 })
-const handleOk = ()=>{
-  showPassWord.value = false
-}
+const user = ref(JSON.parse(JSON.stringify(store.getters.userData) ) ) 
+    const handleOk = ()=>{
+        form.value.validate().then(()=>{
+          console.log('store.getters.userData',store.getters.userData)
+              // let userData = JSON.parse(JSON.stringify(store.getters.userData) ) 
+               let obj = {
+                    "confirmPassword": proxy.$Base64.encode(passWordData.value.confirmPassword),
+                    "newPassword": proxy.$Base64.encode(passWordData.value.newPassword),
+                    "oldPassword":  proxy.$Base64.encode(passWordData.value.oldPassword),
+                    "userId":user.value.id
+                }
+                updatePassword(obj).then((res)=>{
+                    if(res.code === 200){
+                      passWordData.value.resetFields();
+                        showPassWord.value = false
+                    }else{
+                            proxy.$toast({
+                                  message: res.msg,
+                            })
+                    }
+                })
+        })
+
+    }
 const handleCancel = ()=>{
   showPassWord.value = false
 }

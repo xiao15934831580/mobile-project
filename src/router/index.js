@@ -57,6 +57,10 @@ const routes = [
   {
     path: '/outpersonsearch',
     component:() => import('../components/Home/OutpersonSearch/index.vue'),
+  },
+  {
+    path: '/dispatchman',
+    component:() => import('../components/Home/DispatchMan/index.vue'),
   }
 ];
 const router = createRouter({

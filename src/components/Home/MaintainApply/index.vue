@@ -196,11 +196,6 @@
                 label="本次计划执行台时/h"
                 placeholder="本次计划执行台时/h"
                 />
-                <!-- <van-field
-                v-model="item.realExecDate"
-                label="实际执行日期"
-                placeholder="实际执行日期"
-                /> -->
                 <van-field
                 v-model="item.realExecDate"
                 is-link
@@ -237,22 +232,62 @@
             />
         </div>
         <div style="margin: 16px" class="flexBox">
-          <van-button round color="#1989fa"  native-type="submit" @click="saveRepair"  text="保存" />
-          <van-button round color="#1989fa" native-type="submit" @click="commitRepair" text="提交" />
+          <van-button  v-if="showSave" round color="#1989fa"  native-type="submit" @click="saveMaintain"  text="保存" />
+          <van-button v-if="showDeleteRepair" round color="#1989fa"  native-type="submit" @click="deleteMaintain"  text="删除" />
+          <van-button v-if="showDispatchRepair" round color="#1989fa" native-type="submit" @click="commitMaintain" text="派修" />
+          <van-button v-if="showExitRepair" round color="#1989fa" native-type="submit" @click="exitMaintain" text="退回重修" />
+          <van-button v-if="showCompleteCheckNodeFun" round color="#1989fa" native-type="submit" @click="completeCheckNodeFun" text="完成验收" />
+          <van-button v-if="showStartRepNodeFun" round color="#1989fa" native-type="submit" @click="startRepNodeFun" text="开始维保" />
+          <van-button v-if="showEndRepNodeFun" round color="#1989fa" native-type="submit" @click="endRepNodeFun" text="结束维保" />
         </div>
+          
       </van-form>
+
     </div>
+       <VanDialog 
+              :show='isShowNameDialog'
+              title="退回说明"
+              :show-cancel-button = 'true'
+              @cancel='isShowNameDialog = false'
+              @confirm='confirm'
+              >
+              <van-form  ref="formDialog">
+                <!-- 输入框 -->
+                  <van-field
+                    v-model.trim="exitdesc"
+                    input-align="center"
+                    maxlength="50"
+                    label='退回说明'
+                    placeholder="请输入退回说明"
+                    :rules="[{ required: true, message: '请输入退回说明' }]"
+                  />
+              </van-form>
+      </VanDialog>
   </div>
+
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { onBeforeMount } from "vue";
-import { getBillCodeAndDropDowns as getBillCodeAndDropDowns,getBillData as getBillData,saveNewBill as saveNewBill, commitNewRepBill as commitNewRepBill} from '@/api/home'
+import { Dialog } from 'vant';
+import { getBillCodeAndDropDowns as getBillCodeAndDropDowns,getBillData as getBillData,saveNewBill as saveNewBill, deleteBill as deleteBill,returnRepNode as returnRepNode, completeCheckNode as completeCheckNode, startRepNode as startRepNode,endRepNode as endRepNode} from '@/api/home'
+import {getCurrentInstance} from "vue"
+const {proxy} = getCurrentInstance();
 const router = useRouter();
 const pageTitle = ref('保养申请')
 const form= ref('')
+const formDialog = ref('')
+const VanDialog = Dialog.Component;
+const repairman = ref('')
+const showSave = ref(true)
+const showDeleteRepair = ref(false)
+const showDispatchRepair = ref(false)
+const showExitRepair = ref(false)
+const showCompleteCheckNodeFun = ref(false)
+const showStartRepNodeFun = ref(false)
+const showEndRepNodeFun = ref(false)
 const formData = ref({
   billCode: "", //报修单号
   carCode:'', //车辆编号
@@ -277,15 +312,47 @@ const formData = ref({
   ]
 });
 const onClickLeft = () => {
-  router.push({ path: "home" });
+  router.go(-1)
 };
 const numId = ref()
 const approveActive=ref('')
 const showApprove = ref(true); // 新建状态
+const isShowNameDialog = ref(false)
+const exitdesc = ref('')
+const allFalse = () => {
+  showSave.value = false;
+  showDeleteRepair.value = false;
+  showDispatchRepair.value = false;
+  showExitRepair.value = false;
+  showCompleteCheckNodeFun.value = false;
+  showStartRepNodeFun.value = false;
+  showEndRepNodeFun.value = false;
+}
 watch(
   () => router.currentRoute.value.query,
   (newValue) => {
     console.log("newValue", newValue);
+    if(newValue.type === 'task'){ ///任务页面跳转过来的
+      allFalse()
+      switch (newValue.status) {
+        case 'DTJ':
+            showSave.value = true;
+            showDispatchRepair.value = true;
+            showDeleteRepair.value = true;
+            break;
+        case 'DYS':
+            showExitRepair.value = true;
+            showCompleteCheckNodeFun.value = true;
+            break;
+        case 'DWB':
+            showStartRepNodeFun.value = true;
+            break;
+        case 'WBZ':
+            showEndRepNodeFun.value = true;
+            break;    
+        
+      }
+    }
     if (newValue.numId) {
       // 数据详情
       showApprove.value = true;
@@ -304,7 +371,9 @@ onBeforeMount(() => {
        formData.value=res.data
        approveActive.value = res.data.apvDetails.length;
       }else{
-
+              proxy.$toast({
+                    message: res.msg,
+              })
       }
     })
   }else{
@@ -316,7 +385,9 @@ const getBillCodeAndDropDown = ()=>{
        if(res.code === 200){
           formData.value.billCode = res.data.billCode
        }else{
-
+               proxy.$toast({
+                    message: res.msg,
+              })
        }
     })
 }
@@ -414,14 +485,14 @@ const saveData = ()=>{
     return false
   }) 
 }
-const saveRepair = ()=>{
+const saveMaintain = ()=>{
   saveData()
-
 }
 /**
- * 提交
+ * 派修
  */
-const commitRepair=()=>{
+const commitMaintain=()=>{
+    // saveData()
     form.value.validate().then(()=>{
         let obj = {
            billCode: formData.value.billCode, //报修单号
@@ -429,13 +500,22 @@ const commitRepair=()=>{
           carNumber:formData.value.carNumber, //车牌号
           carBrandType:formData.value.carBrandType, //品牌型号
           maintainDetails:JSON.parse(JSON.stringify(formData.value.maintainDetails)),
-          billType:'BXD'
+          billType:'BYD'
         }
-        commitNewRepBill(obj).then((res)=>{
+        saveNewBill(obj).then((res)=>{
           if(res.code === 200){
-            router.push({ path:'home'})
+              router.push({
+                  //传递参数使用params的话，只能使用name指定(在route.js里面声明name)
+                  path:'/dispatchman',
+                  query:{
+                    numId:numId.value,
+                    type:'maintain'
+                  }
+            })
           }else{
-              
+              proxy.$toast({
+                    message: res.msg,
+              })
           }
         })
   })
@@ -443,11 +523,110 @@ const commitRepair=()=>{
     console.log('错误')
   }) 
 }
+/**
+ * 删除
+ */
+const deleteMaintain=()=>{
+  let obj = {
+    billId:numId.value,
+    billType:'BYD'
+  }
+  deleteBill(obj).then((res) => {
+     if(res.code === 200){
+       router.go(-1);
+        }else {
+              proxy.$toast({
+                    message: res.msg,
+              })
+        }
+  })
+}
+/**
+ * 退回重修
+ */
+
+const exitMaintain=()=>{
+  isShowNameDialog.value= true;
+}
+const confirm = () => {
+  formDialog.value.validate().then(()=>{
+      let obj = {
+        billId:numId.value,
+        desc:exitdesc.value
+      }
+      returnRepNode(obj).then((res) => {
+            isShowNameDialog.value= false;
+            if(res.code === 200){
+              router.go(-1);
+            }else {
+                  proxy.$toast({
+                        message: res.msg,
+                  })
+            }
+      })
+  })
+
+}
+
+/**
+ * 任务完成验收
+ */
+const completeCheckNodeFun = () => {
+    let obj = {
+    billId:numId.value,
+  }
+  completeCheckNode(obj).then((res)=>{
+        if(res.code === 200){
+          router.go(-1);
+        }else {
+              proxy.$toast({
+                    message: res.msg,
+              })
+        }
+  })
+}
+/**
+ * 开始维保
+ */
+const startRepNodeFun=()=>{
+ let obj = {
+    billId:numId.value,
+  }
+  startRepNode(obj).then((res)=>{
+        if(res.code === 200){
+          router.go(-1);
+        }else {
+              proxy.$toast({
+                    message: res.msg,
+              })
+        }
+  })
+}
+/**
+ * 结束维保
+ */
+const endRepNodeFun=()=>{
+ let obj = {
+    billId :numId.value,
+  }
+  endRepNode(obj).then((res)=>{
+        if(res.code === 200){
+          router.go(-1);
+        }else {
+              proxy.$toast({
+                    message: res.msg,
+              })
+        }
+  })
+}
 </script>
 
 <style lang="less" scoped>
 :deep(.van-button--round){
   width: 3rem;
+}
+:deep(.van-dialog__content){
+  margin: .5rem;
 }
 .tableHeader {
   color: #666;

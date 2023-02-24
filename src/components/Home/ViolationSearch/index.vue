@@ -8,40 +8,36 @@
     />
     <div class="main">
       <div class="searchBox">
-         <van-field v-model="value" label="违规人所属公司" placeholder="违规人所属公司" />
-         <van-field v-model="value" label="违规人姓名" placeholder="违规人姓名" />
+         <van-field v-model="searchValue.belongType" label="违规人所属公司" placeholder="违规人所属公司" />
+         <van-field v-model="searchValue.violatorName" label="违规人姓名" placeholder="违规人姓名" />
         <div class='flexBox'>
-          <van-button round type="success" size="small">重置</van-button>
-          <van-button round type="success" size="small">查询</van-button>
+          <van-button round type="success" size="small" @click="resetData">重置</van-button>
+          <van-button round type="success" size="small"  @click="queryVioRecordFun(currentLength)">查询</van-button>
         </div>
       </div>
       <div class="contantBox">
-          <div class="singBox"  v-for=" (item,index) in repairData.repairArr" :key  = 'index'>
+         <van-list
+            v-model:loading="loading"
+            :finished="finished"
+            :immediate-check="false"
+            finished-text="没有更多了"
+            @load="onLoad"
+          >
+          <div class="singBox"  v-for=" (item,index) in repairArr" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
-                    {{item.addNumber}}
-                </p>
-                <p class="zhuangtai">
-                    {{item.state}}
+                    {{item.belongType}}
                 </p>
               </div>
               <div class="bottomBox">
                   <div class="leftBox">
                     <div class="rowMsg">
-                      <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                      <p>{{item.licensePlateNumber}}</p>
+                      <p>违规项目:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                      <p>{{item.itemLbl}}</p>
                     </div>
                     <div class="rowMsg">
-                      <p>车辆编号:&nbsp;&nbsp;</p>
-                      <p>{{item.vehicleNumber}}</p>
-                    </div>
-                     <div class="rowMsg">
-                      <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.modelNumber}}</p>
-                    </div>
-                    <div class="rowMsg">
-                      <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.startTime}}</p>
+                      <p>违规人姓名:&nbsp;&nbsp;</p>
+                      <p>{{item.violatorName}}</p>
                     </div>
                   </div>
                   <div class="rightArrow">
@@ -49,6 +45,7 @@
                   </div>
               </div>
           </div>
+         </van-list>
       </div>
     </div>
   </div>
@@ -58,53 +55,59 @@
 <script setup>
 import { ref } from "vue";
 import {useRouter} from 'vue-router';
+import { onBeforeMount } from "vue";
+import { queryVioRecord as queryVioRecord} from '@/api/home'
 const router = useRouter()
+const loading = ref(false);
+const finished = ref(false);
+const currentLength = ref('0')
+const repairArr = ref([]);
+const searchValue = ref({
+  belongType:'',
+  length:0,
+  "violatorName": ""
+})
 const repairData = ref({
     repairArr:[
           {
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'1'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'2'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-            id:'3'
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-          },{
-            addNumber: "111", //报修单号
-            vehicleNumber:'56465454', //车辆编号
-            licensePlateNumber:'45454', //车牌号
-            modelNumber:'fsdf87', //品牌型号
-            startTime:'2023-03-02 14:02:46', //发起时间
-            state:'待提交', //状态
-          }
+            belongType: "",
+            description: "",
+            dropDowns: [],
+            imgBase64List: [],
+            itemLbl: "",
+            violatorName: ""
+          },
     ]
 }
 );
+onBeforeMount(() => {
+  queryVioRecordFun(currentLength.value);
+});
+const queryVioRecordFun = (length)=>{
+   let obj = searchValue.value;
+   obj.length = length
+  queryVioRecord(obj).then((res)=>{
+    if(res.code === 200){
+          repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)
+          currentLength.value = repairArr.value.length>0?repairArr.value.length:0
+          loading.value = false;
+          if(repairArr.value.length>=res.data.total){
+              finished.value = true;
+           }
+       }else{
+
+       }
+  })
+}
+/**
+ * 加载更多
+ */
+ const onLoad = () => {
+     loading.value = true;
+     queryBillFun(currentLength.value)
+ }
 const onClickLeft = ()=>{
-  router.push({ path:'home'})
+  router.go(-1)
 }
 const goViolation = (id)=>{
   router.push({
@@ -115,6 +118,18 @@ const goViolation = (id)=>{
             }
             })
 }
+/**
+ * 重置
+ */
+const resetData =()=>{
+  let obj = {
+    belongType:'',
+    length:0,
+    "violatorName": ""
+  }
+  searchValue.value = obj
+}  
+
 </script>
 
 <style lang="less" scoped>

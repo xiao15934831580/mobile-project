@@ -2,6 +2,8 @@ import { login as loginApi } from '@/api/index'
 import router from '@/router'
 import store from '@/store'
 import { setTokenTime } from '@/utils/auth'
+import {getCurrentInstance} from 'vue'
+
 export default {
   namespaced: true,
   state: () => ({
@@ -32,6 +34,7 @@ export default {
   },
   actions: {
     login({ commit }, userInfo) {
+      let proxy = getCurrentInstance();
       // commit('setToken', '1111')
       // router.replace('/')
       return new Promise((resolve, reject) => {
@@ -45,22 +48,17 @@ export default {
               router.replace('/index')
               resolve()
             }else{
-              // ElNotification({
-              //   title: 'Warning',
-              //   message: '用户名或密码错误',
-              //   type: 'warning',
-              // })
+              
+              proxy.$toast({
+                    message: '用户名或密码错误，登录失败',
+              })
             }
 
           })
           .catch((err) => {
-            // commit('changeErr', true)
-            // console.log(err)
-            // ElNotification({
-            //   title: 'Warning',
-            //   message: '用户名或密码错误',
-            //   type: 'warning',
-            // })
+            proxy.$toast({
+              message: '用户名或密码错误，登录失败',
+            })
             reject(err)
           })
       })

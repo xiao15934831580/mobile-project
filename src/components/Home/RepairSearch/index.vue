@@ -24,11 +24,18 @@
          <!-- <van-field v-model="value" label="当前审批人" placeholder="当前审批人" /> -->
         <div class='flexBox'>
           <van-button round type="success" size="small" @click="resetData">重置</van-button>
-          <van-button round type="success" size="small" @click="queryBillFun">查询</van-button>
+          <van-button round type="success" size="small" @click="queryBillFun(currentLength)">查询</van-button>
         </div>
       </div>
       <div class="contantBox">
-          <div class="singBox"  v-for=" (item,index) in repairData.repairArr" :key  = 'index'>
+          <van-list
+            v-model:loading="loading"
+            :finished="finished"
+            :immediate-check="false"
+            finished-text="没有更多了"
+            @load="onLoad"
+          >
+          <van-cell class="singBox"  v-for=" (item,index) in repairArr" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
                     {{item.billCode}}
@@ -60,7 +67,8 @@
                     <van-icon @click="goRepair(item.id)" name="arrow" />
                   </div>
               </div>
-          </div>
+          </van-cell>
+          </van-list>
       </div>
     </div>
   </div>
@@ -68,35 +76,35 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 import {useRouter} from 'vue-router';
 import { onBeforeMount } from "vue";
 import { getBillDropDowns as getBillDropDowns,queryBill as queryBill } from '@/api/home'
+import {getCurrentInstance} from 'vue'
+const {proxy} = getCurrentInstance();
 const router = useRouter()
 const value1 = ref(0);
 const  option1 = ref([]);
+const loading = ref(false);
+const finished = ref(false);
+const currentLength = ref('0')
 const searchValue = ref({
   apvStatus:"", //审批状态
   billCode:'', //单号
   billType:'BXD', //单据类型
   carCode:'', //车辆编号
   carNumber:'' , //车牌号
-  limit:'10',// 显示条数
-  pageNum:'1', //页码
+  length:0,
   taskType:'',// 任务类型
   urgencyLevel:'' //紧急程度
 })    
-const repairData = ref({
-    repairArr:[
-    ]
-}
-);
+const repairArr = ref([]);
 const onClickLeft = ()=>{
-  router.push({ path:'home'})
+  router.go(-1)
 }
 onBeforeMount(() => {
   getBillDropDown();
-  queryBillFun()
+  queryBillFun(currentLength.value)
 });
 const getBillDropDown = ()=>{
     getBillDropDowns().then((res)=>{
@@ -104,25 +112,40 @@ const getBillDropDown = ()=>{
           option1.value = res.data.apvType
           console.log(option1.value)
        }else{
-
+           proxy.$toast({
+              message: res.msg,
+            })
        }
     })
 }
 /**
  * 获取查询数据（初始化/查询）
  */
-const queryBillFun = ()=>{
-  let obj = searchValue.value;
+const queryBillFun = (length)=>{
+   let obj = searchValue.value;
+   obj.length = length
   queryBill(obj).then((res)=>{
     if(res.code === 200){
-          repairData.value.repairArr = res.data.records
-          console.log(res.data)
-       }else{
-
-       }
+          repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)
+          currentLength.value = repairArr.value.length>0?repairArr.value.length:0
+          loading.value = false;
+          if(repairArr.value.length>=res.data.total){
+              finished.value = true;
+           }
+      }else{
+            proxy.$toast({
+              message: res.msg,
+            })
+      }
   })
 }
-
+/**
+ * 加载更多
+ */
+ const onLoad = () => {
+     loading.value = true;
+     queryBillFun(currentLength.value)
+ }
 /**
  * 重置
  */
@@ -133,8 +156,7 @@ const resetData =()=>{
     billType:'BXD', //单据类型
     carCode:'', //车辆编号
     carNumber:'' , //车牌号
-    limit:'10',// 显示条数
-    pageNum:'1', //页码
+    length:0,
     taskType:'',// 任务类型
     urgencyLevel:'' //紧急程度
   }

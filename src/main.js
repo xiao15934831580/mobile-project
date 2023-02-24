@@ -5,7 +5,7 @@ import router from './router'
 import 'amfe-flexible'
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/antd.css';
-import { Button,Tabbar,Uploader,Step,Dialog , Steps,RadioGroup, Radio ,Search, TabbarItem,DatetimePicker ,Space,Form, Field, Switch,CellGroup,Picker   } from 'vant';
+import { Button,Tabbar,Checkbox,CheckboxGroup ,Uploader,Step,Dialog ,List, Steps,RadioGroup, Radio ,Search, Toast ,TabbarItem,DatetimePicker ,Space,Form, Field, Switch,CellGroup,Picker   } from 'vant';
 
 import 'vant/lib/index.css';
 import axios from 'axios';
@@ -27,8 +27,12 @@ app.use(router).use(store)
 .use(RadioGroup)
 .use(Form)
 .use(Search)
+.use(Checkbox)
+.use(CheckboxGroup )
 .use(Field)
 .use(Step)
+.use(List)
+.use(Toast)
 .use(Steps)
 .use(Uploader)
 .use(DatetimePicker )

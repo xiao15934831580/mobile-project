@@ -12,11 +12,18 @@
          <van-field v-model="searchValue.receiver" label="接待人" placeholder="接待人" />
           <div class='flexBox'>
             <van-button round type="success" size="small" @click="resetData">重置</van-button>
-            <van-button round type="success" size="small" @click="searchData">查询</van-button>
+            <van-button round type="success" size="small" @click="searchData(currentLength)">查询</van-button>
           </div>
       </div>
       <div class="contantBox">
-          <div class="singBox"  v-for=" (item,index) in repairData.repairArr" :key  = 'index'>
+        <van-list
+            v-model:loading="loading"
+            :finished="finished"
+            :immediate-check="false"
+            finished-text="没有更多了"
+            @load="onLoad"
+          >
+          <div class="singBox"  v-for=" (item,index) in repairArr" :key  = 'index'>
               <div class="topBox">
                 <p class="danhao">
                     {{item.company}}
@@ -53,6 +60,7 @@
                   </div>
               </div>
           </div>
+        </van-list>
       </div>
     </div>
   </div>
@@ -64,31 +72,24 @@ import { ref } from "vue";
 import {useRouter} from 'vue-router';
 import { onBeforeMount } from "vue";
 import { queryVisRecord as queryVisRecord} from '@/api/home'
+import {getCurrentInstance} from 'vue'
+const {proxy} = getCurrentInstance();
 const router = useRouter()
+const loading = ref(false);
+const finished = ref(false);
+const currentLength = ref('0')
+const repairArr = ref([]);
 const searchValue = ref({
   "company": "",
-  "limit": 10,
-  "pageNum": 1,
+  length:0,
   "receiver": ""
 })
-const repairData = ref({
-    repairArr:[
-          {
-            company: "", //所属公司
-            leader:'', //负责人
-            leaderPhoneNum:'', //负责人电话
-            receiver:'', //接待人
-            receiverPhoneNum:'', //接待人电话
-            visitTime:'',//入场时间
-          }
-    ]
-}
-);
+
 const onClickLeft = ()=>{
-  router.push({ path:'home'})
+  router.go(-1)
 }
 onBeforeMount(() => {
-  searchData()
+  searchData(currentLength.value)
 });
 const goOutperson = (id)=>{
   router.push({
@@ -102,19 +103,36 @@ const goOutperson = (id)=>{
 const resetData = ()=>{
   let obj ={
   "company": "",
-  "limit": 10,
-  "pageNum": 1,
+  length:0,
   "receiver": ""
   }
   searchValue.value = obj
 }
-const searchData =()=>{
-  let obj = searchValue.value
+const searchData =(length)=>{
+    let obj = searchValue.value;
+   obj.length = length
   queryVisRecord(obj).then((res)=>{
-    console.log(res.data)
-    repairData.value.repairArr = res.data.records;
+    if(res.code === 200){
+          repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)
+          currentLength.value = repairArr.value.length>0?repairArr.value.length:0
+          loading.value = false;
+          if(repairArr.value.length>=res.data.total){
+              finished.value = true;
+           }
+    }else {
+      proxy.$toast({
+                    message: res.msg,
+              })
+    }
   })
 }
+/**
+ * 加载更多
+ */
+ const onLoad = () => {
+     loading.value = true;
+     searchData(currentLength.value)
+ }
 </script>
 
 <style lang="less" scoped>

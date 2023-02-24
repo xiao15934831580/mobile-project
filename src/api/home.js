@@ -1,5 +1,18 @@
 import http from './request'
 /**
+ * 修改密码
+ * @param {*} data 
+ * @returns 
+ */
+export const updatePassword = (data) => {
+    return http({
+        url: '/updatePassword',
+        method: 'POST',
+        data
+    })
+}
+
+/**
  * 首页 - 获取任务统计
  */
  export const getTaskCount = () => {
@@ -54,6 +67,17 @@ import http from './request'
         url: '/saveNewBill',
         method: 'POST',
         data
+    })
+}
+/**
+ * 派修提交
+ * @param {*} data 
+ * @returns 
+ */
+ export const dispatchRepBill= (params) => {
+    return http({
+        url: '/dispatchRepBill?billId='+params.billId+'&repUserName='+params.repUserName,
+        method: 'POST',
     })
 }
 /**
@@ -131,6 +155,119 @@ import http from './request'
  export const getVioRecordById= (id) => {
     return http({
         url: '/getVioRecordById'+'?id='+id,
+        method: 'POST',
+    })
+}
+/**-------------------------任务----------------------------- */
+/**
+ * 获取所有的任务
+ */
+ export const getTaskDataByBillType = (data) => {
+    return http({
+        url: 'getTaskDataByBillType',
+        method: 'POST',
+        data
+    })
+}
+
+/**
+ * 任务查询
+ */
+ export const queryTask= (data) => {
+    return http({
+        url: '/queryTask',
+        method: 'POST',
+        data
+    })
+}
+/**
+ * 任务删除
+ */
+ export const deleteBill= (params) => {
+    return http({
+        url: '/deleteBill?billId='+params.billId+'&billType='+params.billType,
+        method: 'POST',
+    })
+}
+/**
+ * 任务派修
+ */
+ export const dispatchNewMatBill= (params) => {
+    return http({
+        url: '/dispatchNewMatBill?billId='+params.billId+'&repUserName='+params.repUserName,
+        method: 'POST',
+    })
+}
+/**
+ * 任务退回
+ */
+ export const returnRepNode= (params) => {
+    return http({
+        url: '/returnRepNode?billId='+params.billId+'&desc='+params.desc,
+        method: 'POST',
+    })
+}
+/**
+ * 任务完成验收
+ */
+ export const completeCheckNode= (params) => {
+    return http({
+        url: '/completeCheckNode?billId='+params.billId,
+        method: 'POST',
+    })
+}
+/**
+ * 任务开始维保
+ */
+ export const startRepNode= (params) => {
+    return http({
+        url: '/startRepNode?billId='+params.billId,
+        method: 'POST',
+    })
+}
+/**
+ * 任务结束维保
+ */
+ export const endRepNode= (params) => {
+    return http({
+        url: '/endRepNode?billId='+params.billId,
+        method: 'POST',
+    })
+}
+/**
+ * 分配点检员
+ */
+ export const note= () => {
+    return http({
+        url: '/note',
+        method: 'POST',
+    })
+}
+/**
+ * 获取维修人员
+ */
+ export const getRepMan= () => {
+    return http({
+        url: '/getRepMan',
+        method: 'POST',
+    })
+}
+
+/**
+ * 获取点检员
+ */
+ export const getInspector= () => {
+    return http({
+        url: '/getInspector',
+        method: 'POST',
+    })
+}
+/**
+ * 选择点检员后保存
+ */
+ export const startInspect= (params) => {
+    return http({
+        url: '/startInspect?billId='+params.billId+'&inspector='+params.inspector,
         method: 'POST',
     })
 }

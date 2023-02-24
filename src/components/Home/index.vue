@@ -4,15 +4,15 @@
     <img src='../../assets/images/true.jpg' alt="背景图片" class="bgImg"/>
     <div>
           <van-grid :column-num="3">
-            <van-grid-item @click="turnTask('paixiu')" icon="home-o" text="待派修" :badge= 'taskData.dpx' />
-            <van-grid-item @click="turnTask('yanshou')" icon="search" text="待验收" :badge= 'taskData.dys' />
-            <van-grid-item @click="turnTask('chuli')" icon="search" text="已处理" :badge="taskData.ycl" />
-            <van-grid-item @click="turnTask('chuli')" icon="search" text="已报修" :badge="taskData.ybx" />
-            <van-grid-item @click="turnTask('fenpei')" icon="search" text="待分配" :badge="taskData.dfp" />
-            <van-grid-item @click="turnTask('daiweibao')" icon="search" text="待维保" :badge="taskData.dwb" />
-            <van-grid-item @click="turnTask('weibao')" icon="search" text="维保中" :badge="taskData.wbz" />
-            <van-grid-item @click="turnTask('yiyanshou')" icon="search" text="已验收" :badge="taskData.yys" />
-            <van-grid-item @click="turnTask('tijiao')" icon="search" text="待提交" :badge="taskData.dtj" />
+            <van-grid-item @click="turnTask('DPX')" icon="home-o" text="待派修" :badge= 'taskData.dpx' />
+            <van-grid-item @click="turnTask('DYS')" icon="search" text="待验收" :badge= 'taskData.dys' />
+            <van-grid-item @click="turnTask('YCL')" icon="search" text="已处理" :badge="taskData.ycl" />
+            <van-grid-item @click="turnTask('YBX')" icon="search" text="已报修" :badge="taskData.ybx" />
+            <van-grid-item @click="turnTask('DFP')" icon="search" text="待分配" :badge="taskData.dfp" />
+            <van-grid-item @click="turnTask('DWB')" icon="search" text="待维保" :badge="taskData.dwb" />
+            <van-grid-item @click="turnTask('WBZ')" icon="search" text="维保中" :badge="taskData.wbz" />
+            <van-grid-item @click="turnTask('YYS')" icon="search" text="已验收" :badge="taskData.yys" />
+            <van-grid-item @click="turnTask('DTJ')" icon="search" text="待提交" :badge="taskData.dtj" />
           </van-grid>
     </div>
 

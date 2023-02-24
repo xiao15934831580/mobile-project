@@ -60,6 +60,8 @@ import { ref,watch } from "vue";
 import {useRouter} from 'vue-router';
 import { saveVisitorRecord as saveVisitorRecord,getVisRecordById as getVisRecordById} from '@/api/home'
 import { onBeforeMount } from "vue";
+import {getCurrentInstance} from 'vue'
+const {proxy} = getCurrentInstance();
 const router = useRouter()
 const form = ref('')
 const pageTitle = ref('外来人员登记')
@@ -74,7 +76,7 @@ const formData = ref({
     id:''
 });
 const onClickLeft = ()=>{
-  router.push({ path:'home'})
+  router.go(-1)
 }
 const showApprove = ref(true); // 新建状态
 const numId =ref('')
@@ -85,11 +87,13 @@ onBeforeMount(() => {
        formData.value=res.data
       //  approveActive.value = res.data.apvDetails.length;
       }else{
-
+              proxy.$toast({
+                    message: res.msg,
+              })
       }
     })
   }else{
-    getBillCodeAndDropDown();
+    // getBillCodeAndDropDown();
   }
 });
 watch(
@@ -114,7 +118,9 @@ const saveOutperson = ()=>{
        if(res.code === 200){
             router.push({ path:'home'})
           }else{
-            
+                  proxy.$toast({
+                    message: res.msg,
+              })
           }
     })
   })

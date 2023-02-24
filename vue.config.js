@@ -19,7 +19,7 @@ module.exports = defineConfig({
         //新版本sass-loader把data改为了prependData
         prependData: `@import "@/assets/css/global.scss";`
       }
-    }
+    } 
   },
   devServer: {
     https: false,
