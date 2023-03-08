@@ -1,63 +1,69 @@
 <template>
           <div class="contantBox">
-          <div class="singBox"  v-for=" (item,index) in arrData" :key  = 'index'>
-              <div class="topBox">
-                <p class="danhao">
-                    {{item.billCode}}
-                </p>
-                <p class="zhuangtai">
-                    {{item.apvStatusLbl}}
-                </p>
-              </div>
-              <div class="bottomBox">
-                  <div class="leftBox">
-                    <div class="rowMsg">
-                      <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                      <p>{{item.carNumber}}</p>
+                <div class="singBox"  v-for=" (item,index) in arrData" :key  = 'index'>
+                    <div class="topBox">
+                      <p class="danhao">
+                          {{item.billCode}}
+                      </p>
+                      <p class="zhuangtai">
+                          {{item.apvStatusLbl}}
+                      </p>
                     </div>
-                    <div class="rowMsg">
-                      <p>车辆编号:&nbsp;&nbsp;</p>
-                      <p>{{item.carCode}}</p>
+                    <div class="bottomBox">
+                        <div class="leftBox">
+                          <div class="rowMsg">
+                            <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                            <p>{{item.carNumber}}</p>
+                          </div>
+                          <div class="rowMsg">
+                            <p>车辆编号:&nbsp;&nbsp;</p>
+                            <p>{{item.carCode}}</p>
+                          </div>
+                          <div class="rowMsg">
+                            <p>品牌型号:&nbsp;&nbsp;</p>
+                            <p>{{item.carBrandType}}</p>
+                          </div>
+                          <div class="rowMsg">
+                            <p>发起时间:&nbsp;&nbsp;</p>
+                            <p>{{item.updatedDate}}</p>
+                          </div>
+                          <div class="rowMsg">
+                            <p>紧急程度:&nbsp;&nbsp;</p>
+                            <p>{{item.urgencyLevelLbl}}</p>
+                          </div>
+                        </div>
+                        <div class="rightArrow">
+                          <van-icon @click="goPage(item)" name="arrow" />
+                        </div>
                     </div>
-                     <div class="rowMsg">
-                      <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.carBrandType}}</p>
-                    </div>
-                    <div class="rowMsg">
-                      <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.updatedDate}}</p>
-                    </div>
-                    <div class="rowMsg">
-                      <p>紧急程度:&nbsp;&nbsp;</p>
-                      <p>{{item.urgencyLevelLbl}}</p>
-                    </div>
-                  </div>
-                  <div class="rightArrow">
-                    <van-icon @click="goPage(item)" name="arrow" />
-                  </div>
-              </div>
+                </div>
           </div>
-      </div>
 </template>
 <script setup>
 import { defineProps, ref ,watch} from "vue";
 import {useRouter} from 'vue-router';
+const loading = ref(false);
+const finished = ref(false);
 const router = useRouter()
 const arrData = ref('')
 let props = defineProps({
     arrData:{
         type: Object,
         default: () => {},
-    }
+    },
+    loading:{
+      type:Boolean
+    },
+    finished:{
+      type:Boolean
+    },
+
 })
 watch(
   () => props,
   () => {
       arrData.value = props.arrData
-      console.log(arrData.value)
-//     titile.value = props.dialogTitile;
-//     if (titile.value === "编辑" )
-//       formInline = props.dialogTableValue.value;
+      // getdata = props.getdata()
   },
   { deep: true, immediate: true }
 );
@@ -74,10 +80,11 @@ const goPage = (item)=>{
             })
 
 }
+
 </script>
 <style lang="less" scoped>
 .contantBox{
-          margin-top: 32px;
+          // margin-top: 32px;
           .singBox{
             background-color: #ffffff;
             display: flex;

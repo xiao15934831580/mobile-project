@@ -7,15 +7,91 @@
     </van-nav-bar>
     <van-tabs class="tabsBox" v-model:active="activeName"  @click-tab="onClickTab">
       <van-tab  name="DTJ" title="待提交">
-        <SearchResult :arrData = 'searchData.tijiaoData'/>
+        <van-list
+                v-model:loading="loading"
+                :finished="finished"
+                :immediate-check="false"
+                finished-text="没有更多了"
+                @load="onLoad"
+              >
+              <SearchResult :arrData = 'tijiaoData'/>
+        </van-list>
       </van-tab>
-      <van-tab name="DFP" title="待分配"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="DPX" title="待派修"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="DYS" title="待验收"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="DWB" title="待维保"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="WBZ" title="维保中"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="YCL" title="已处理"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
-      <van-tab name="YYS" title="已验收"><SearchResult :arrData = 'searchData.tijiaoData'/></van-tab>
+      <van-tab name="DFP" title="待分配">
+          <van-list
+                v-model:loading="loading"
+                :finished="finished"
+                :immediate-check="false"
+                finished-text="没有更多了"
+                @load="onLoad"
+              >
+              <SearchResult :arrData = 'tijiaoData'/>
+          </van-list>
+        </van-tab>
+      <van-tab name="DPX" title="待派修">
+          <van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+            <SearchResult :arrData = 'tijiaoData'/>
+          </van-list>
+         </van-tab>
+      <van-tab name="DYS" title="待验收">
+        <van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+                <SearchResult :arrData = 'tijiaoData'/>
+        </van-list>
+      </van-tab>
+      <van-tab name="DWB" title="待维保">
+        <van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+                <SearchResult :arrData = 'tijiaoData'/>
+        </van-list>
+      </van-tab>
+      <van-tab name="WBZ" title="维保中"><van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+                <SearchResult :arrData = 'tijiaoData'/>
+        </van-list></van-tab>
+      <van-tab name="YCL" title="已处理">
+        <van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+                <SearchResult :arrData = 'tijiaoData'/>
+        </van-list>
+      </van-tab>
+      <van-tab name="YYS" title="已验收">
+        <van-list
+                  v-model:loading="loading"
+                  :finished="finished"
+                  :immediate-check="false"
+                  finished-text="没有更多了"
+                  @load="onLoad"
+                >
+                <SearchResult :arrData = 'tijiaoData'/>
+        </van-list>
+      </van-tab>
       <!-- <van-tab name="baoxiu" title="已报修">内容 3</van-tab> -->
     </van-tabs>
   </div>
@@ -29,7 +105,7 @@
          <van-field v-model="searchValue.approver" label="当前审批人" placeholder="当前审批人" />
         <div class='flexBox'>
           <van-button round type="success" size="small" @click="resetData">重置</van-button>
-          <van-button round type="success" size="small" @click="queryVioRecordFun">查询</van-button>
+          <van-button round type="success" size="small" @click="queryVioRecordFun('0')">查询</van-button>
         </div>
       </div>
   </van-popup>
@@ -44,13 +120,16 @@ import {getCurrentInstance} from 'vue'
 const {proxy} = getCurrentInstance();
 const router = useRouter();
 const activeName = ref('DTJ')
+const loading = ref(false);
+const finished = ref(false);
+const currentLength = ref('0')
 const searchValue = ref({
   "apvStatus": "",
   "billCode": "",
   "billType": "",
   "carCode": "",
   "carNumber": "",
-  length:0,
+  length:'0',
   "taskType": "",
   "urgencyLevel": ""
 })
@@ -61,7 +140,7 @@ const resetData = ()=>{
   "billType": "",
   "carCode": "",
   "carNumber": "",
-  length:0,
+  length:'0',
   "taskType": "",
   "urgencyLevel": ""
   }
@@ -70,13 +149,21 @@ const resetData = ()=>{
 const onClickLeft = ()=>{
   router.go(-1)
 }
-const queryVioRecordFun = ()=>{
+const queryVioRecordFun = (length)=>{ 
   searchValue.value.taskType = activeName.value
+  if(length === '0'){
+     tijiaoData.value = []
+   }
   queryTask(searchValue.value).then((res)=>{
     isShowSearchBOx.value = false;
     resetData()
     if(res.code === 200){
-       searchData.value.tijiaoData = res.data.records
+        tijiaoData.value = JSON.parse(JSON.stringify(tijiaoData.value)).concat(res.data.records)
+       currentLength.value = tijiaoData.value.length>0?tijiaoData.value.length:0;
+       loading.value = false;
+       if(tijiaoData.value.length>=res.data.total){
+              finished.value = true;
+           }
     }else{
               proxy.$toast({
                     message: res.msg,
@@ -96,46 +183,54 @@ watch(
   { immediate: true }
 );
 onBeforeMount(() => {
-  let obj={
-    length:0,
-    "taskType": activeName.value,
-  }
-  getTaskDataByBillType(obj).then((res)=>{
-    if(res.code === 200){
-      searchData.value.tijiaoData = res.data.records
-    }else {
-              proxy.$toast({
-                    message: res.msg,
-              })
-    }
-  })
+  currentLength.value='0'
+  getData()
 })
-const onClickTab = ({name}) => {
+const getData = ()=>{
     let obj={
-    length:0,
-    "taskType": name,
-  }
-  getTaskDataByBillType(obj).then((res)=>{
-    if(res.code === 200){
-      searchData.value.tijiaoData = res.data.records
-    }else {
-              proxy.$toast({
-                    message: res.msg,
-              })
-    }
-  })
+        length:currentLength.value,
+        "taskType": activeName.value,
+      }
+      if(obj.length === '0'){
+        tijiaoData.value = []
+      }
+      getTaskDataByBillType(obj).then((res)=>{
+        if(res.code === 200){
+              tijiaoData.value = JSON.parse(JSON.stringify(tijiaoData.value)).concat(res.data.records)
+              currentLength.value = tijiaoData.value.length>0?tijiaoData.value.length:0;
+              loading.value = false;
+              if(tijiaoData.value.length>=res.data.total){
+                      finished.value = true;
+              }
+        }else {
+                  proxy.$toast({
+                        message: res.msg,
+                  })
+        }
+      })
+}
+const onClickTab = ({name}) => {
+    activeName.value = name;
+    currentLength.value = '0';
+    loading.value = false;
+    finished.value = true;
+    getData()
 }
 const isShowSearchBOx = ref(false)
 
-const searchData = ref({
-  tijiaoData: [
-    ]
-})
+const tijiaoData = ref([])
 
 
 const searchIcon = () => {
   isShowSearchBOx.value = true
 }
+
+/**
+ * 加载更多
+ */
+ const onLoad = () => {
+    getData()
+ }
 </script>
 
 <style lang="less" scoped>

@@ -24,7 +24,7 @@
          <!-- <van-field v-model="value" label="当前审批人" placeholder="当前审批人" /> -->
         <div class='flexBox'>
           <van-button round type="success" size="small" @click="resetData">重置</van-button>
-          <van-button round type="success" size="small" @click="queryBillFun(currentLength)">查询</van-button>
+          <van-button round type="success" size="small" @click="queryBillFun('0')">查询</van-button>
         </div>
       </div>
       <div class="contantBox">
@@ -35,39 +35,39 @@
             finished-text="没有更多了"
             @load="onLoad"
           >
-          <van-cell class="singBox"  v-for=" (item,index) in repairArr" :key  = 'index'>
-              <div class="topBox">
-                <p class="danhao">
-                    {{item.billCode}}
-                </p>
-                <p class="zhuangtai">
-                    {{item.apvStatusLbl}}
-                </p>
-              </div>
-              <div class="bottomBox">
-                  <div class="leftBox">
-                    <div class="rowMsg">
-                      <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                      <p>{{item.carNumber}}</p>
+            <van-cell class="singBox"  v-for=" (item,index) in repairArr" :key  = 'index'>
+                <div class="topBox">
+                  <p class="danhao">
+                      {{item.billCode}}
+                  </p>
+                  <p class="zhuangtai">
+                      {{item.apvStatusLbl}}
+                  </p>
+                </div>
+                <div class="bottomBox">
+                    <div class="leftBox">
+                      <div class="rowMsg">
+                        <p>车牌号:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                        <p>{{item.carNumber}}</p>
+                      </div>
+                      <div class="rowMsg">
+                        <p>车辆编号:&nbsp;&nbsp;</p>
+                        <p>{{item.carCode}}</p>
+                      </div>
+                      <div class="rowMsg">
+                        <p>品牌型号:&nbsp;&nbsp;</p>
+                        <p>{{item.carBrandType}}</p>
+                      </div>
+                      <div class="rowMsg">
+                        <p>发起时间:&nbsp;&nbsp;</p>
+                        <p>{{item.createdDate}}</p>
+                      </div>
                     </div>
-                    <div class="rowMsg">
-                      <p>车辆编号:&nbsp;&nbsp;</p>
-                      <p>{{item.carCode}}</p>
+                    <div class="rightArrow">
+                      <van-icon @click="goRepair(item.id)" name="arrow" />
                     </div>
-                     <div class="rowMsg">
-                      <p>品牌型号:&nbsp;&nbsp;</p>
-                      <p>{{item.carBrandType}}</p>
-                    </div>
-                    <div class="rowMsg">
-                      <p>发起时间:&nbsp;&nbsp;</p>
-                      <p>{{item.createdDate}}</p>
-                    </div>
-                  </div>
-                  <div class="rightArrow">
-                    <van-icon @click="goRepair(item.id)" name="arrow" />
-                  </div>
-              </div>
-          </van-cell>
+                </div>
+            </van-cell>
           </van-list>
       </div>
     </div>
@@ -124,6 +124,9 @@ const getBillDropDown = ()=>{
 const queryBillFun = (length)=>{
    let obj = searchValue.value;
    obj.length = length
+   if(length === '0'){
+     repairArr.value = []
+   }
   queryBill(obj).then((res)=>{
     if(res.code === 200){
           repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)

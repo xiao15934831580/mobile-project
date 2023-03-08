@@ -12,7 +12,7 @@
          <van-field v-model="searchValue.violatorName" label="违规人姓名" placeholder="违规人姓名" />
         <div class='flexBox'>
           <van-button round type="success" size="small" @click="resetData">重置</van-button>
-          <van-button round type="success" size="small"  @click="queryVioRecordFun(currentLength)">查询</van-button>
+          <van-button round type="success" size="small"  @click="queryVioRecordFun('0')">查询</van-button>
         </div>
       </div>
       <div class="contantBox">
@@ -86,6 +86,9 @@ onBeforeMount(() => {
 const queryVioRecordFun = (length)=>{
    let obj = searchValue.value;
    obj.length = length
+  if(length === '0'){
+     repairArr.value = []
+   }
   queryVioRecord(obj).then((res)=>{
     if(res.code === 200){
           repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)

@@ -12,7 +12,7 @@
          <van-field v-model="searchValue.receiver" label="接待人" placeholder="接待人" />
           <div class='flexBox'>
             <van-button round type="success" size="small" @click="resetData">重置</van-button>
-            <van-button round type="success" size="small" @click="searchData(currentLength)">查询</van-button>
+            <van-button round type="success" size="small" @click="searchData('0')">查询</van-button>
           </div>
       </div>
       <div class="contantBox">
@@ -111,6 +111,9 @@ const resetData = ()=>{
 const searchData =(length)=>{
     let obj = searchValue.value;
    obj.length = length
+   if(length === '0'){
+     repairArr.value = []
+   }
   queryVisRecord(obj).then((res)=>{
     if(res.code === 200){
           repairArr.value = JSON.parse(JSON.stringify(repairArr.value)).concat(res.data.records)
